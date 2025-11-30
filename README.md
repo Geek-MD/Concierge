@@ -1,6 +1,6 @@
-# HA Chile Water Price – Backend Processor
+# Concierge Server (Backend)
 
-This repository provides the complete backend pipeline for the **Home Assistant custom integration: HA Chile Water Price**, which tracks and exposes the official water pricing information for different regions, companies, and locations in Chile.
+This repository provides the complete backend pipeline for the **Home Assistant custom integration: Concierge**, which tracks and exposes the official water pricing information for different regions, companies, and locations in Chile.
 
 The backend is responsible for scraping, downloading, parsing, and structuring water tariff data published by the **Superintendencia de Servicios Sanitarios (SISS)**.
 
