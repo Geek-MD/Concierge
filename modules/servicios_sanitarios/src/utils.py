@@ -7,7 +7,7 @@ import json
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
-from typing import Optional, Dict
+from typing import Optional, Dict, List, Any
 from pathlib import Path
 from urllib.parse import urljoin
 
@@ -185,3 +185,184 @@ def extraer_url_por_texto(url: str, texto_buscar: str, timeout: int = 10) -> Opt
     except Exception as e:
         print(f"Error al extraer URL por texto: {e}")
         return None
+
+
+def extraer_nombre_empresa(texto: str) -> Optional[str]:
+    """
+    Extrae el nombre de la empresa de agua desde un texto con formato "Empresa - Texto".
+    
+    Args:
+        texto: Texto que contiene el nombre de la empresa y descripción
+        
+    Returns:
+        String con el nombre de la empresa (antes del guión), o None si no se encuentra
+        
+    Examples:
+        >>> extraer_nombre_empresa("Aguas Andinas - Tarifas vigentes")
+        "Aguas Andinas"
+    """
+    try:
+        if not texto or not isinstance(texto, str):
+            return None
+        
+        # Buscar el guión y extraer texto antes de él
+        if " - " in texto:
+            nombre = texto.split(" - ")[0].strip()
+            return nombre if nombre else None
+        
+        # Si no hay guión, devolver el texto completo limpio
+        return texto.strip() if texto.strip() else None
+    except Exception as e:
+        print(f"Error al extraer nombre de empresa: {e}")
+        return None
+
+
+def extraer_datos_tabla_tarifas(
+    html_content: str, 
+    base_url: str
+) -> List[Dict[str, Any]]:
+    """
+    Extrae datos de una tabla HTML de tarifas de agua.
+    
+    Busca tablas con columnas "Localidades" y "Tarifa vigente", y extrae
+    las filas que tienen datos en ambas columnas. De la columna "Tarifa vigente"
+    extrae la URL del archivo PDF.
+    
+    Args:
+        html_content: Contenido HTML de la página
+        base_url: URL base para resolver URLs relativas
+        
+    Returns:
+        Lista de diccionarios con los datos extraídos, cada uno con:
+        - localidad: Nombre de la localidad
+        - url_pdf: URL absoluta del archivo PDF de la tarifa
+    """
+    try:
+        soup = BeautifulSoup(html_content, 'html.parser')
+        datos_extraidos: List[Dict[str, Any]] = []
+        
+        # Buscar todas las tablas
+        tablas = soup.find_all('table')
+        
+        for tabla in tablas:
+            # Buscar encabezados de la tabla
+            headers = []
+            header_row = tabla.find('tr')
+            if header_row:
+                headers = [th.get_text(strip=True) for th in header_row.find_all(['th', 'td'])]
+            
+            # Verificar si tiene las columnas requeridas
+            if not headers:
+                continue
+                
+            # Buscar índices de las columnas (case-insensitive)
+            idx_localidades = -1
+            idx_tarifa = -1
+            
+            for i, header in enumerate(headers):
+                header_lower = header.lower()
+                if 'localidad' in header_lower:
+                    idx_localidades = i
+                if 'tarifa' in header_lower and 'vigente' in header_lower:
+                    idx_tarifa = i
+            
+            # Si no se encuentran ambas columnas, probar con la siguiente tabla
+            if idx_localidades == -1 or idx_tarifa == -1:
+                continue
+            
+            # Extraer filas de datos
+            filas = tabla.find_all('tr')[1:]  # Saltar encabezado
+            
+            for fila in filas:
+                celdas = fila.find_all(['td', 'th'])
+                
+                # Verificar que haya suficientes celdas
+                if len(celdas) <= max(idx_localidades, idx_tarifa):
+                    continue
+                
+                # Extraer localidad
+                localidad = celdas[idx_localidades].get_text(strip=True)
+                
+                # Extraer URL del PDF desde la celda de tarifa vigente
+                celda_tarifa = celdas[idx_tarifa]
+                enlace_pdf = celda_tarifa.find('a')
+                
+                # Solo agregar si ambos datos existen
+                if localidad and enlace_pdf:
+                    href = enlace_pdf.get('href')
+                    if href:
+                        url_pdf = urljoin(base_url, href)
+                        datos_extraidos.append({
+                            'localidad': localidad,
+                            'url_pdf': url_pdf
+                        })
+        
+        return datos_extraidos
+    except Exception as e:
+        print(f"Error al extraer datos de tabla de tarifas: {e}")
+        return []
+
+
+def extraer_empresas_agua(url: str, timeout: int = 10) -> List[Dict[str, Any]]:
+    """
+    Extrae información de todas las empresas de agua desde la página de tarifas vigentes.
+    
+    Para cada empresa encontrada, extrae:
+    - Nombre de la empresa
+    - Lista de localidades con sus respectivas URLs de PDF de tarifas
+    
+    Args:
+        url: URL de la página de tarifas vigentes
+        timeout: Tiempo máximo de espera en segundos
+        
+    Returns:
+        Lista de diccionarios, uno por empresa, con:
+        - empresa: Nombre de la empresa de agua
+        - tarifas: Lista de diccionarios con localidad y url_pdf
+    """
+    try:
+        response = requests.get(url, timeout=timeout, allow_redirects=True)
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.content, 'html.parser')
+        empresas: List[Dict[str, Any]] = []
+        
+        # Buscar elementos que contengan nombres de empresas
+        # Típicamente serán encabezados (h2, h3, h4) o elementos con formato "Empresa - Tarifas vigentes"
+        posibles_empresas = soup.find_all(['h2', 'h3', 'h4', 'strong', 'b'])
+        
+        for elemento in posibles_empresas:
+            texto = elemento.get_text(strip=True)
+            
+            # Verificar si el texto contiene "Tarifas vigentes" o similar
+            if 'tarifa' not in texto.lower():
+                continue
+            
+            # Extraer nombre de empresa
+            nombre_empresa = extraer_nombre_empresa(texto)
+            if not nombre_empresa:
+                continue
+            
+            # Buscar la tabla siguiente al encabezado de la empresa
+            tabla_siguiente = elemento.find_next('table')
+            if not tabla_siguiente:
+                continue
+            
+            # Extraer datos de la tabla
+            tabla_html = str(tabla_siguiente)
+            datos_tarifas = extraer_datos_tabla_tarifas(
+                tabla_html,
+                response.url
+            )
+            
+            # Solo agregar si hay datos de tarifas
+            if datos_tarifas:
+                empresas.append({
+                    'empresa': nombre_empresa,
+                    'tarifas': datos_tarifas
+                })
+        
+        return empresas
+    except Exception as e:
+        print(f"Error al extraer empresas de agua: {e}")
+        return []

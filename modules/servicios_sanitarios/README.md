@@ -20,6 +20,12 @@ Este es un prototipo funcional desarrollado para validar la arquitectura y funci
   - Extrae automáticamente la URL del enlace "Tarifas vigentes"
   - Guardado selectivo: solo guarda cuando hay cambios
   - Mantiene historial de cambios en las URLs
+- **Monitoreo de Tarifas Vigentes**:
+  - Extrae información de todas las empresas de agua de Chile
+  - Para cada empresa extrae: nombre, localidades y URLs de PDFs de tarifas
+  - Detecta cambios automáticamente y mantiene historial
+  - Guarda datos estructurados en formato JSON
+  - Cumple con estándares de calidad: ruff y mypy
 
 ## Estructura del Módulo
 
@@ -73,6 +79,42 @@ resultado = servicio.verificar_siss(ruta_salida="data/siss_url.json")
 # El JSON guardado incluye historial de cambios anteriores
 
 # Ver ejemplo completo en ejemplo_siss.py
+
+# Monitorear tarifas vigentes de empresas de agua
+resultado = servicio.monitorear_tarifas_vigentes(ruta_salida="data/tarifas_empresas.json")
+
+# El resultado incluye:
+# - exito: Si la operación fue exitosa
+# - url_tarifas: URL de la página de tarifas vigentes
+# - empresas: Lista con datos de cada empresa (nombre, localidades, PDFs)
+# - total_empresas: Cantidad de empresas encontradas
+# - timestamp: Momento de la verificación
+# - guardado: Si se guardó (solo si es primera vez o hay cambios)
+# - es_primera_vez: True si es la primera verificación
+# - cambios_detectados: True si hubo cambios desde última verificación
+# - mensaje: Descripción del resultado
+
+# El JSON guardado tiene la estructura:
+# {
+#   "url_tarifas": "https://...",
+#   "empresas": [
+#     {
+#       "empresa": "Aguas Andinas",
+#       "tarifas": [
+#         {
+#           "localidad": "Santiago",
+#           "url_pdf": "https://...tarifa.pdf"
+#         }
+#       ]
+#     }
+#   ],
+#   "total_empresas": N,
+#   "timestamp": "2024-01-01T00:00:00",
+#   "verificado": true,
+#   "historial": [...]
+# }
+
+# Ver ejemplo completo en ejemplo_tarifas.py
 ```
 
 ## Desarrollo
@@ -95,7 +137,7 @@ python -m pytest tests/
 
 ## Roadmap
 
-### Versión Actual (v0.1.0 - PoC)
+### Versión Actual (v0.2.0 - PoC)
 - [x] Estructura básica del módulo
 - [x] Implementación de funcionalidad core
 - [x] Pruebas unitarias básicas
@@ -104,12 +146,20 @@ python -m pytest tests/
 - [x] Extracción de URL "Tarifas vigentes" desde HTML
 - [x] Guardado selectivo (solo cuando hay cambios)
 - [x] Historial de cambios en JSON
+- [x] **Monitoreo de Tarifas Vigentes**
+  - [x] Extracción de datos de empresas de agua
+  - [x] Parseo de tablas HTML con localidades y PDFs
+  - [x] Detección automática de cambios
+  - [x] Tests completos (49 tests, 100% passing)
+  - [x] Cumplimiento ruff y mypy (100%)
 
 ### Versión Futura
-- [ ] Automatización de verificación SISS (chequeo diario programado)
+- [ ] Automatización de monitoreo (chequeo diario programado)
 - [ ] Notificaciones cuando se detecten cambios
+- [ ] Análisis de variaciones históricas de tarifas
 - [ ] Dashboard para visualizar historial de cambios
-- [ ] Evaluar migración a lenguaje moderno (Rust, Go, TypeScript, etc.)
+- [ ] Comparación de tarifas entre empresas y localidades
+- [ ] Evaluar migración a Go (como siguiente paso)
 - [ ] Implementar funcionalidades avanzadas
 - [ ] Integración con otros módulos de Concierge
 - [ ] API REST para exposición de servicios

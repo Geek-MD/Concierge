@@ -4,14 +4,16 @@ Core functionality for Servicios Sanitarios module.
 Este archivo contiene la lógica principal del módulo de servicios sanitarios.
 """
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from datetime import datetime
 from .utils import (
     generate_id, 
     format_timestamp, 
     verificar_redireccion_url, 
     guardar_json,
-    extraer_url_por_texto
+    extraer_url_por_texto,
+    extraer_empresas_agua,
+    cargar_json
 )
 
 
@@ -188,8 +190,6 @@ class ServiciosSanitarios:
         Returns:
             Dict con información del resultado (url, timestamp, guardado, cambios)
         """
-        from .utils import cargar_json
-        
         url_siss = "https://www.siss.gob.cl"
         timestamp = datetime.now()
         
@@ -272,6 +272,143 @@ class ServiciosSanitarios:
             "mensaje": (
                 "Primera verificación guardada" if es_primera_vez else
                 "Cambios detectados y guardados" if hay_cambios else
+                "Sin cambios, no se guardó"
+            )
+        }
+    
+    def monitorear_tarifas_vigentes(
+        self, 
+        url_tarifas: Optional[str] = None,
+        ruta_salida: str = "data/tarifas_empresas.json"
+    ) -> Dict[str, Any]:
+        """
+        Monitorea la URL de "Tarifas vigentes" y extrae datos de empresas de agua.
+        
+        Este método accede a la URL de tarifas vigentes, extrae información de cada
+        empresa de agua (nombre, localidades, URLs de PDFs) y guarda los datos en JSON
+        solo si es la primera vez o si hay cambios detectados.
+        
+        Args:
+            url_tarifas: URL de la página de tarifas vigentes. Si no se provee,
+                        se obtiene automáticamente usando verificar_siss()
+            ruta_salida: Ruta del archivo JSON donde guardar los datos
+            
+        Returns:
+            Dict con información del resultado:
+            - exito: True si la operación fue exitosa
+            - url_tarifas: URL de la página de tarifas vigentes
+            - empresas: Lista de empresas y sus datos
+            - timestamp: Momento de la verificación
+            - archivo: Ruta del archivo de salida
+            - guardado: True si se guardaron cambios
+            - es_primera_vez: True si es la primera ejecución
+            - cambios_detectados: True si hubo cambios desde última verificación
+            - mensaje: Descripción del resultado
+        """
+        timestamp = datetime.now()
+        
+        # Si no se provee URL, obtenerla desde verificar_siss
+        if url_tarifas is None:
+            resultado_siss = self.verificar_siss()
+            if not resultado_siss["exito"]:
+                return {
+                    "exito": False,
+                    "url_tarifas": None,
+                    "empresas": [],
+                    "timestamp": format_timestamp(timestamp),
+                    "error": "No se pudo obtener URL de tarifas vigentes"
+                }
+            url_tarifas = resultado_siss["url_tarifas_vigentes"]
+            
+            if not url_tarifas:
+                return {
+                    "exito": False,
+                    "url_tarifas": None,
+                    "empresas": [],
+                    "timestamp": format_timestamp(timestamp),
+                    "error": "URL de tarifas vigentes no disponible"
+                }
+        
+        # Extraer datos de empresas de agua
+        empresas = extraer_empresas_agua(url_tarifas)
+        
+        if not empresas:
+            return {
+                "exito": False,
+                "url_tarifas": url_tarifas,
+                "empresas": [],
+                "timestamp": format_timestamp(timestamp),
+                "error": "No se pudieron extraer datos de empresas"
+            }
+        
+        # Cargar datos previos si existen
+        datos_previos = cargar_json(ruta_salida)
+        
+        # Verificar si hay cambios
+        es_primera_vez = datos_previos is None
+        cambios_detectados = False
+        
+        if not es_primera_vez and datos_previos is not None:
+            # Comparar datos actuales con previos
+            empresas_previas = datos_previos.get("empresas", [])
+            
+            # Convertir a formato comparable (serializable)
+            empresas_str_actual = str(sorted(
+                [(e["empresa"], sorted(str(t) for t in e["tarifas"])) 
+                 for e in empresas]
+            ))
+            empresas_str_previa = str(sorted(
+                [(e["empresa"], sorted(str(t) for t in e["tarifas"])) 
+                 for e in empresas_previas]
+            ))
+            
+            cambios_detectados = empresas_str_actual != empresas_str_previa
+        
+        hay_cambios = es_primera_vez or cambios_detectados
+        
+        # Solo guardar si hay cambios
+        guardado = False
+        if hay_cambios:
+            # Preparar historial
+            historial: List[Dict[str, Any]] = []
+            if datos_previos and "historial" in datos_previos:
+                historial = datos_previos["historial"]
+            
+            # Agregar entrada actual al historial si no es la primera vez
+            if not es_primera_vez and datos_previos:
+                entrada_historial = {
+                    "empresas": datos_previos.get("empresas", []),
+                    "timestamp": datos_previos.get("timestamp"),
+                    "total_empresas": datos_previos.get("total_empresas", 0)
+                }
+                historial.append(entrada_historial)
+            
+            # Preparar datos para guardar
+            datos = {
+                "url_tarifas": url_tarifas,
+                "empresas": empresas,
+                "total_empresas": len(empresas),
+                "timestamp": format_timestamp(timestamp),
+                "verificado": True,
+                "historial": historial
+            }
+            
+            # Guardar en JSON
+            guardado = guardar_json(datos, ruta_salida)
+        
+        return {
+            "exito": True,
+            "url_tarifas": url_tarifas,
+            "empresas": empresas,
+            "total_empresas": len(empresas),
+            "timestamp": format_timestamp(timestamp),
+            "archivo": ruta_salida,
+            "guardado": guardado,
+            "es_primera_vez": es_primera_vez,
+            "cambios_detectados": cambios_detectados,
+            "mensaje": (
+                "Primera verificación guardada" if es_primera_vez else
+                "Cambios detectados y guardados" if cambios_detectados else
                 "Sin cambios, no se guardó"
             )
         }

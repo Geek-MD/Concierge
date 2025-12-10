@@ -192,7 +192,7 @@ class TestVerificarSISS:
         assert resultado["es_primera_vez"] is True
         assert resultado["mensaje"] == "Primera verificación guardada"
     
-    @patch('modules.servicios_sanitarios.src.utils.cargar_json')
+    @patch('modules.servicios_sanitarios.src.core.cargar_json')
     @patch('modules.servicios_sanitarios.src.core.extraer_url_por_texto')
     @patch('modules.servicios_sanitarios.src.core.verificar_redireccion_url')
     @patch('modules.servicios_sanitarios.src.core.guardar_json')
@@ -218,7 +218,7 @@ class TestVerificarSISS:
         assert resultado["mensaje"] == "Sin cambios, no se guardó"
         mock_guardar.assert_not_called()
     
-    @patch('modules.servicios_sanitarios.src.utils.cargar_json')
+    @patch('modules.servicios_sanitarios.src.core.cargar_json')
     @patch('modules.servicios_sanitarios.src.core.extraer_url_por_texto')
     @patch('modules.servicios_sanitarios.src.core.verificar_redireccion_url')
     @patch('modules.servicios_sanitarios.src.core.guardar_json')
@@ -252,7 +252,7 @@ class TestVerificarSISS:
         assert len(datos_guardados["historial"]) == 1
         assert datos_guardados["historial"][0]["url_final"] == "https://www.siss.gob.cl/viejo"
     
-    @patch('modules.servicios_sanitarios.src.utils.cargar_json')
+    @patch('modules.servicios_sanitarios.src.core.cargar_json')
     @patch('modules.servicios_sanitarios.src.core.extraer_url_por_texto')
     @patch('modules.servicios_sanitarios.src.core.verificar_redireccion_url')
     @patch('modules.servicios_sanitarios.src.core.guardar_json')
