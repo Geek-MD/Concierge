@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	ss "github.com/Geek-MD/Concierge/modules/servicios_sanitarios"
 )
@@ -120,9 +121,5 @@ func main() {
 }
 
 func repetir(s string, n int) string {
-	result := ""
-	for i := 0; i < n; i++ {
-		result += s
-	}
-	return result
+	return strings.Repeat(s, n)
 }
