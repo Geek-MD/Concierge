@@ -3,8 +3,11 @@ Utilidades y funciones auxiliares para el módulo de servicios sanitarios.
 """
 
 import uuid
+import json
+import requests
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict
+from pathlib import Path
 
 
 def generate_id() -> str:
@@ -86,3 +89,63 @@ def formatear_duracion(inicio: datetime, fin: Optional[datetime] = None) -> str:
         partes.append(f"{segs}s")
     
     return " ".join(partes)
+
+
+def verificar_redireccion_url(url: str, timeout: int = 10) -> Optional[str]:
+    """
+    Verifica la URL a la que redirecciona una página web.
+    
+    Args:
+        url: URL inicial a verificar
+        timeout: Tiempo máximo de espera en segundos
+        
+    Returns:
+        String con la URL final tras las redirecciones, o None si hay error
+    """
+    try:
+        response = requests.get(url, timeout=timeout, allow_redirects=True)
+        return response.url
+    except Exception as e:
+        print(f"Error al verificar redirección: {e}")
+        return None
+
+
+def guardar_json(datos: Dict, ruta_archivo: str) -> bool:
+    """
+    Guarda datos en un archivo JSON.
+    
+    Args:
+        datos: Diccionario con los datos a guardar
+        ruta_archivo: Ruta del archivo donde guardar los datos
+        
+    Returns:
+        True si se guardó exitosamente, False en caso contrario
+    """
+    try:
+        ruta = Path(ruta_archivo)
+        ruta.parent.mkdir(parents=True, exist_ok=True)
+        
+        with open(ruta, 'w', encoding='utf-8') as f:
+            json.dump(datos, f, ensure_ascii=False, indent=2)
+        return True
+    except Exception as e:
+        print(f"Error al guardar JSON: {e}")
+        return False
+
+
+def cargar_json(ruta_archivo: str) -> Optional[Dict]:
+    """
+    Carga datos desde un archivo JSON.
+    
+    Args:
+        ruta_archivo: Ruta del archivo JSON a cargar
+        
+    Returns:
+        Diccionario con los datos cargados, o None si hay error
+    """
+    try:
+        with open(ruta_archivo, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error al cargar JSON: {e}")
+        return None

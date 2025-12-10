@@ -6,7 +6,7 @@ Este archivo contiene la lógica principal del módulo de servicios sanitarios.
 
 from typing import Dict, List, Optional
 from datetime import datetime
-from .utils import generate_id, format_timestamp
+from .utils import generate_id, format_timestamp, verificar_redireccion_url, guardar_json
 
 
 class ServiciosSanitarios:
@@ -166,3 +166,52 @@ class ServiciosSanitarios:
             True si el módulo está activo, False en caso contrario
         """
         return self._activo
+    
+    def verificar_siss(self, ruta_salida: str = "data/siss_url.json") -> Dict:
+        """
+        Verifica la URL de redirección de la web de SISS y la guarda en JSON.
+        
+        Este método accede a https://www.siss.gob.cl, detecta a qué URL 
+        redirecciona y guarda dicha información en un archivo JSON con 
+        timestamp.
+        
+        Args:
+            ruta_salida: Ruta del archivo JSON donde guardar la URL
+            
+        Returns:
+            Dict con información del resultado (url, timestamp, guardado)
+        """
+        url_siss = "https://www.siss.gob.cl"
+        timestamp = datetime.now()
+        
+        # Verificar redirección
+        url_final = verificar_redireccion_url(url_siss)
+        
+        if url_final is None:
+            return {
+                "exito": False,
+                "url_original": url_siss,
+                "url_final": None,
+                "timestamp": format_timestamp(timestamp),
+                "error": "No se pudo obtener la URL de redirección"
+            }
+        
+        # Preparar datos para guardar
+        datos = {
+            "url_original": url_siss,
+            "url_final": url_final,
+            "timestamp": format_timestamp(timestamp),
+            "verificado": True
+        }
+        
+        # Guardar en JSON
+        guardado = guardar_json(datos, ruta_salida)
+        
+        return {
+            "exito": True,
+            "url_original": url_siss,
+            "url_final": url_final,
+            "timestamp": format_timestamp(timestamp),
+            "archivo": ruta_salida,
+            "guardado": guardado
+        }

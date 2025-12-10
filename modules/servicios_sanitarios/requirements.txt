@@ -1,6 +1,9 @@
 # Concierge - Servicios Sanitarios Module
 # Python Dependencies
 
+# HTTP requests
+requests>=2.31.0
+
 # Testing
 pytest>=7.4.0
 pytest-cov>=4.1.0
