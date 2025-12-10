@@ -63,7 +63,7 @@ def main():
             print(f"   {i}. {empresa['empresa']}")
             print(f"      • Localidades con tarifas: {len(empresa['tarifas'])}")
             if empresa['tarifas']:
-                print(f"      • Ejemplos:")
+                print("      • Ejemplos:")
                 for j, tarifa in enumerate(empresa['tarifas'][:3], 1):
                     print(f"        {j}. {tarifa['localidad']}")
                     print(f"           PDF: {tarifa['url_pdf']}")
