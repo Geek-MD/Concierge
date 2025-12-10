@@ -15,6 +15,7 @@ Este es un prototipo funcional desarrollado para validar la arquitectura y funci
 - **Modularidad**: Funciona de manera independiente dentro del ecosistema Concierge
 - **Extensibilidad**: Diseñado para agregar nuevas funcionalidades fácilmente
 - **Simplicidad**: API clara y directa para integración con otros módulos
+- **Verificación SISS**: Verifica y guarda la URL de redirección de https://www.siss.gob.cl
 
 ## Estructura del Módulo
 
@@ -42,10 +43,21 @@ pip install -r requirements.txt
 ## Uso
 
 ```python
-from modules.servicios_sanitarios.src import core
+from modules.servicios_sanitarios.src import ServiciosSanitarios
 
-# Ejemplo de uso básico
-# (Los ejemplos específicos se agregarán según la implementación)
+# Crear instancia del módulo
+servicio = ServiciosSanitarios()
+
+# Verificar la URL de redirección de SISS
+resultado = servicio.verificar_siss(ruta_salida="data/siss_url.json")
+
+# El resultado incluye:
+# - url_original: URL inicial verificada
+# - url_final: URL final después de redirecciones
+# - timestamp: Momento de la verificación
+# - guardado: Si se guardó correctamente en JSON
+
+# Ver ejemplo completo en ejemplo_siss.py
 ```
 
 ## Desarrollo
@@ -73,8 +85,10 @@ python -m pytest tests/
 - [x] Implementación de funcionalidad core
 - [x] Pruebas unitarias básicas
 - [x] Documentación de API
+- [x] Verificación de URL SISS con guardado en JSON
 
 ### Versión Futura
+- [ ] Automatización de verificación SISS (chequeo diario programado)
 - [ ] Evaluar migración a lenguaje moderno (Rust, Go, TypeScript, etc.)
 - [ ] Implementar funcionalidades avanzadas
 - [ ] Integración con otros módulos de Concierge
