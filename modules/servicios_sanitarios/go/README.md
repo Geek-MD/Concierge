@@ -68,11 +68,17 @@ func main() {
 
 ```bash
 # Ejecutar ejemplo básico
-cd examples
-go run ejemplo_basico.go
+cd examples/basico
+go run main.go
 
 # Ejecutar ejemplo de verificación SISS
-go run ejemplo_siss.go
+cd examples/siss
+go run main.go
+
+# Compilar ejemplos
+cd examples/basico
+go build -o ejemplo_basico
+./ejemplo_basico
 ```
 
 ## Desarrollo
@@ -124,8 +130,10 @@ go/
 ├── go.mod               # Dependencias Go
 ├── go.sum               # Checksums de dependencias
 ├── examples/            # Ejemplos de uso
-│   ├── ejemplo_basico.go
-│   └── ejemplo_siss.go
+│   ├── basico/
+│   │   └── main.go      # Ejemplo básico
+│   └── siss/
+│       └── main.go      # Ejemplo verificación SISS
 └── README.md            # Esta documentación
 ```
 
