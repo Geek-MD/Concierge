@@ -6,7 +6,6 @@ import pytest
 import json
 import os
 import sys
-from pathlib import Path
 from unittest.mock import patch, MagicMock
 
 # Agregar el directorio raíz al path para importar el módulo

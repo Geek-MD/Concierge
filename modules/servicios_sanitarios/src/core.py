@@ -28,7 +28,7 @@ class ServiciosSanitarios:
         self.nombre = nombre
         self.id = generate_id()
         self.fecha_creacion = datetime.now()
-        self.tareas = []
+        self.tareas: List[Dict] = []
         self._activo = True
         
     def agregar_tarea(self, 

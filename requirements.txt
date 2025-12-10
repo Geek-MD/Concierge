@@ -8,3 +8,6 @@ pytest-cov>=4.1.0
 # Code quality
 black>=23.0.0
 flake8>=6.0.0
+ruff>=0.1.0
+mypy>=1.7.0
+types-requests>=2.31.0
