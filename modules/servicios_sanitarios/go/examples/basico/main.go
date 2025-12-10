@@ -9,9 +9,9 @@ import (
 )
 
 func main() {
-	fmt.Println("=" + repetir("=", 59))
+	fmt.Println(strings.Repeat("=", 60))
 	fmt.Println("Concierge - Servicios Sanitarios - Ejemplo de Uso (Go)")
-	fmt.Println("=" + repetir("=", 59))
+	fmt.Println(strings.Repeat("=", 60))
 	fmt.Println()
 
 	// Crear instancia del módulo
@@ -115,11 +115,7 @@ func main() {
 	fmt.Printf("   Activo: %s\n", activo)
 	fmt.Println()
 
-	fmt.Println("=" + repetir("=", 59))
+	fmt.Println(strings.Repeat("=", 60))
 	fmt.Println("Demo completada exitosamente")
-	fmt.Println("=" + repetir("=", 59))
-}
-
-func repetir(s string, n int) string {
-	return strings.Repeat(s, n)
+	fmt.Println(strings.Repeat("=", 60))
 }

@@ -10,9 +10,9 @@ import (
 )
 
 func main() {
-	fmt.Println("=" + repetir("=", 69))
+	fmt.Println(strings.Repeat("=", 70))
 	fmt.Println("Concierge - Verificación SISS (Go)")
-	fmt.Println("=" + repetir("=", 69))
+	fmt.Println(strings.Repeat("=", 70))
 	fmt.Println()
 
 	// Crear instancia del módulo
@@ -94,14 +94,10 @@ func main() {
 		fmt.Println()
 	}
 
-	fmt.Println("=" + repetir("=", 69))
+	fmt.Println(strings.Repeat("=", 70))
 	fmt.Println("Demo completada")
-	fmt.Println("=" + repetir("=", 69))
+	fmt.Println(strings.Repeat("=", 70))
 	fmt.Println()
 	fmt.Println("Nota: Ejecuta este programa múltiples veces para ver cómo")
 	fmt.Println("      solo guarda cuando hay cambios en las URLs.")
-}
-
-func repetir(s string, n int) string {
-	return strings.Repeat(s, n)
 }
