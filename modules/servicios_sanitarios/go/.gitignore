@@ -1,0 +1,30 @@
+# Binarios compilados
+servicios_sanitarios
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Archivos de test
+*.test
+*.out
+coverage.out
+*.prof
+
+# Dependencias de vendor (si se usa)
+vendor/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Datos temporales
+data/
+tmp/

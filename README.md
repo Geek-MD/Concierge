@@ -107,3 +107,11 @@ Este proyecto está licenciado bajo la Licencia MIT. Ver el archivo [LICENSE](LI
 ---
 
 *Este proyecto es privado y está en desarrollo activo.*
+
+---
+
+<div align="center">
+
+**Proudly developed with GitHub Copilot**
+
+</div>
