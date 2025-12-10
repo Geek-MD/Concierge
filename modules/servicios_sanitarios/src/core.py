@@ -6,7 +6,13 @@ Este archivo contiene la lógica principal del módulo de servicios sanitarios.
 
 from typing import Dict, List, Optional
 from datetime import datetime
-from .utils import generate_id, format_timestamp, verificar_redireccion_url, guardar_json
+from .utils import (
+    generate_id, 
+    format_timestamp, 
+    verificar_redireccion_url, 
+    guardar_json,
+    extraer_url_por_texto
+)
 
 
 class ServiciosSanitarios:
@@ -172,15 +178,18 @@ class ServiciosSanitarios:
         Verifica la URL de redirección de la web de SISS y la guarda en JSON.
         
         Este método accede a https://www.siss.gob.cl, detecta a qué URL 
-        redirecciona y guarda dicha información en un archivo JSON con 
-        timestamp.
+        redirecciona, extrae la URL del enlace "Tarifas vigentes" y guarda
+        dicha información en un archivo JSON con timestamp solo si es la
+        primera vez o si alguna URL ha cambiado.
         
         Args:
             ruta_salida: Ruta del archivo JSON donde guardar la URL
             
         Returns:
-            Dict con información del resultado (url, timestamp, guardado)
+            Dict con información del resultado (url, timestamp, guardado, cambios)
         """
+        from .utils import cargar_json
+        
         url_siss = "https://www.siss.gob.cl"
         timestamp = datetime.now()
         
@@ -192,26 +201,77 @@ class ServiciosSanitarios:
                 "exito": False,
                 "url_original": url_siss,
                 "url_final": None,
+                "url_tarifas_vigentes": None,
                 "timestamp": format_timestamp(timestamp),
                 "error": "No se pudo obtener la URL de redirección"
             }
         
-        # Preparar datos para guardar
-        datos = {
-            "url_original": url_siss,
-            "url_final": url_final,
-            "timestamp": format_timestamp(timestamp),
-            "verificado": True
-        }
+        # Extraer URL de "Tarifas vigentes"
+        url_tarifas = extraer_url_por_texto(url_final, "Tarifas vigentes")
         
-        # Guardar en JSON
-        guardado = guardar_json(datos, ruta_salida)
+        # Cargar datos previos si existen
+        datos_previos = cargar_json(ruta_salida)
+        
+        # Verificar si hay cambios
+        es_primera_vez = datos_previos is None
+        url_final_cambio = False
+        url_tarifas_cambio = False
+        
+        if datos_previos:
+            url_final_previa = datos_previos.get("url_final")
+            url_tarifas_previa = datos_previos.get("url_tarifas_vigentes")
+            
+            url_final_cambio = url_final_previa != url_final
+            url_tarifas_cambio = url_tarifas_previa != url_tarifas
+        
+        hay_cambios = es_primera_vez or url_final_cambio or url_tarifas_cambio
+        
+        # Solo guardar si hay cambios
+        guardado = False
+        if hay_cambios:
+            # Preparar historial
+            historial = []
+            if datos_previos and "historial" in datos_previos:
+                historial = datos_previos["historial"]
+            
+            # Agregar entrada actual al historial si no es la primera vez
+            if not es_primera_vez and datos_previos:
+                entrada_historial = {
+                    "url_final": datos_previos.get("url_final"),
+                    "url_tarifas_vigentes": datos_previos.get("url_tarifas_vigentes"),
+                    "timestamp": datos_previos.get("timestamp")
+                }
+                historial.append(entrada_historial)
+            
+            # Preparar datos para guardar
+            datos = {
+                "url_original": url_siss,
+                "url_final": url_final,
+                "url_tarifas_vigentes": url_tarifas,
+                "timestamp": format_timestamp(timestamp),
+                "verificado": True,
+                "historial": historial
+            }
+            
+            # Guardar en JSON
+            guardado = guardar_json(datos, ruta_salida)
         
         return {
             "exito": True,
             "url_original": url_siss,
             "url_final": url_final,
+            "url_tarifas_vigentes": url_tarifas,
             "timestamp": format_timestamp(timestamp),
             "archivo": ruta_salida,
-            "guardado": guardado
+            "guardado": guardado,
+            "es_primera_vez": es_primera_vez,
+            "cambios": {
+                "url_final": url_final_cambio,
+                "url_tarifas_vigentes": url_tarifas_cambio
+            },
+            "mensaje": (
+                "Primera verificación guardada" if es_primera_vez else
+                "Cambios detectados y guardados" if hay_cambios else
+                "Sin cambios, no se guardó"
+            )
         }
