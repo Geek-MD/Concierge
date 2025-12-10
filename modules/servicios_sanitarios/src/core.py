@@ -73,7 +73,7 @@ class ServiciosSanitarios:
         Lista las tareas registradas, opcionalmente filtradas.
         
         Args:
-            filtro_estado: Filtrar por estado (pendiente, en_progreso, completado)
+            filtro_estado: Filtrar por estado (pendiente, completado)
             filtro_prioridad: Filtrar por prioridad
             
         Returns:

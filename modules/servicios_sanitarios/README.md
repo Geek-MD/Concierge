@@ -70,9 +70,9 @@ python -m pytest tests/
 
 ### Versión Actual (v0.1.0 - PoC)
 - [x] Estructura básica del módulo
-- [ ] Implementación de funcionalidad core
-- [ ] Pruebas unitarias básicas
-- [ ] Documentación de API
+- [x] Implementación de funcionalidad core
+- [x] Pruebas unitarias básicas
+- [x] Documentación de API
 
 ### Versión Futura
 - [ ] Evaluar migración a lenguaje moderno (Rust, Go, TypeScript, etc.)
