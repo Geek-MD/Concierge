@@ -15,7 +15,11 @@ Este es un prototipo funcional desarrollado para validar la arquitectura y funci
 - **Modularidad**: Funciona de manera independiente dentro del ecosistema Concierge
 - **Extensibilidad**: Diseñado para agregar nuevas funcionalidades fácilmente
 - **Simplicidad**: API clara y directa para integración con otros módulos
-- **Verificación SISS**: Verifica y guarda la URL de redirección de https://www.siss.gob.cl
+- **Verificación SISS**: 
+  - Verifica y guarda la URL de redirección de https://www.siss.gob.cl
+  - Extrae automáticamente la URL del enlace "Tarifas vigentes"
+  - Guardado selectivo: solo guarda cuando hay cambios
+  - Mantiene historial de cambios en las URLs
 
 ## Estructura del Módulo
 
@@ -48,14 +52,25 @@ from modules.servicios_sanitarios.src import ServiciosSanitarios
 # Crear instancia del módulo
 servicio = ServiciosSanitarios()
 
-# Verificar la URL de redirección de SISS
+# Verificar la URL de redirección de SISS y extraer URL de Tarifas vigentes
 resultado = servicio.verificar_siss(ruta_salida="data/siss_url.json")
 
 # El resultado incluye:
-# - url_original: URL inicial verificada
+# - url_original: URL inicial verificada (https://www.siss.gob.cl)
 # - url_final: URL final después de redirecciones
+# - url_tarifas_vigentes: URL extraída del enlace "Tarifas vigentes"
 # - timestamp: Momento de la verificación
-# - guardado: Si se guardó correctamente en JSON
+# - guardado: Si se guardó (solo si es primera vez o hay cambios)
+# - es_primera_vez: True si es la primera verificación
+# - cambios: Dict indicando qué URLs cambiaron
+# - mensaje: Descripción del resultado
+
+# Nota: Solo guarda en JSON cuando:
+# 1. Es la primera verificación
+# 2. La URL de redirección cambió
+# 3. La URL de "Tarifas vigentes" cambió
+
+# El JSON guardado incluye historial de cambios anteriores
 
 # Ver ejemplo completo en ejemplo_siss.py
 ```
@@ -86,9 +101,14 @@ python -m pytest tests/
 - [x] Pruebas unitarias básicas
 - [x] Documentación de API
 - [x] Verificación de URL SISS con guardado en JSON
+- [x] Extracción de URL "Tarifas vigentes" desde HTML
+- [x] Guardado selectivo (solo cuando hay cambios)
+- [x] Historial de cambios en JSON
 
 ### Versión Futura
 - [ ] Automatización de verificación SISS (chequeo diario programado)
+- [ ] Notificaciones cuando se detecten cambios
+- [ ] Dashboard para visualizar historial de cambios
 - [ ] Evaluar migración a lenguaje moderno (Rust, Go, TypeScript, etc.)
 - [ ] Implementar funcionalidades avanzadas
 - [ ] Integración con otros módulos de Concierge
