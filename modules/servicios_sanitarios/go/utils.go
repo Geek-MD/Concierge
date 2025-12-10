@@ -3,7 +3,6 @@ package servicios_sanitarios
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"

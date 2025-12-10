@@ -135,3 +135,11 @@ Ver [LICENSE](../../LICENSE) en el directorio raíz del proyecto.
 - Evaluar lenguajes compilados para mejor rendimiento
 - Considerar containerización (Docker) para deployment
 - Analizar necesidades de persistencia de datos
+
+---
+
+<div align="center">
+
+**Proudly developed with GitHub Copilot**
+
+</div>
