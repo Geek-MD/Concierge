@@ -190,8 +190,6 @@ class ServiciosSanitarios:
         Returns:
             Dict con información del resultado (url, timestamp, guardado, cambios)
         """
-        from .utils import cargar_json
-        
         url_siss = "https://www.siss.gob.cl"
         timestamp = datetime.now()
         
