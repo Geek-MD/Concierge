@@ -159,7 +159,6 @@ python -m pytest tests/
 - [ ] Análisis de variaciones históricas de tarifas
 - [ ] Dashboard para visualizar historial de cambios
 - [ ] Comparación de tarifas entre empresas y localidades
-- [ ] Evaluar migración a Go (como siguiente paso)
 - [ ] Implementar funcionalidades avanzadas
 - [ ] Integración con otros módulos de Concierge
 - [ ] API REST para exposición de servicios
