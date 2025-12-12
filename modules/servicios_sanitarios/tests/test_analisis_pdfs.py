@@ -16,27 +16,27 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 
 from modules.servicios_sanitarios.src import ServiciosSanitarios
 from modules.servicios_sanitarios.src.utils import (
-    extraer_texto_pdf,
-    extraer_texto_pdf_con_ocr,
-    extraer_tablas_pdf,
-    parsear_estructura_tabla,
-    organizar_analisis_jerarquico,
-    obtener_pdfs_en_carpeta,
-    obtener_pdfs_nuevos
+    extract_pdf_text,
+    extract_pdf_text_with_ocr,
+    extract_pdf_tables,
+    parse_table_structure,
+    organize_hierarchical_analysis,
+    get_pdfs_in_folder,
+    get_new_pdfs
 )
 
 
-class TestOrganizarAnalisisJerarquico(unittest.TestCase):
+class TestOrganizeHierarchicalAnalysis(unittest.TestCase):
     """Tests para la función organizar_analisis_jerarquico."""
     
     def test_organizar_vacio(self):
         """Test con lista vacía."""
-        estructura = organizar_analisis_jerarquico([])
+        estructura = organize_hierarchical_analysis([])
         
-        self.assertEqual(estructura['resumen']['total_empresas'], 0)
-        self.assertEqual(estructura['resumen']['total_localidades'], 0)
-        self.assertEqual(estructura['resumen']['total_pdfs'], 0)
-        self.assertEqual(len(estructura['empresas']), 0)
+        self.assertEqual(estructura['summary']['total_companies'], 0)
+        self.assertEqual(estructura['summary']['total_localities'], 0)
+        self.assertEqual(estructura['summary']['total_pdfs'], 0)
+        self.assertEqual(len(estructura['companies']), 0)
     
     def test_organizar_una_empresa_una_localidad(self):
         """Test con una empresa y una localidad."""
@@ -45,29 +45,29 @@ class TestOrganizarAnalisisJerarquico(unittest.TestCase):
                 "nombre_archivo": "Santiago.pdf",
                 "carpeta": "Aguas_Andinas",
                 "ruta_pdf": "/path/Aguas_Andinas/Santiago.pdf",
-                "tamanio_kb": 150.5,
-                "total_paginas": 5,
-                "total_tablas": 2
+                "size_kb": 150.5,
+                "total_pages": 5,
+                "total_tables": 2
             }
         ]
         
-        estructura = organizar_analisis_jerarquico(pdfs)
+        estructura = organize_hierarchical_analysis(pdfs)
         
-        self.assertEqual(estructura['resumen']['total_empresas'], 1)
-        self.assertEqual(estructura['resumen']['total_localidades'], 1)
-        self.assertEqual(estructura['resumen']['total_pdfs'], 1)
+        self.assertEqual(estructura['summary']['total_companies'], 1)
+        self.assertEqual(estructura['summary']['total_localities'], 1)
+        self.assertEqual(estructura['summary']['total_pdfs'], 1)
         
         # Verificar empresa
-        self.assertIn('Aguas_Andinas', estructura['empresas'])
-        empresa = estructura['empresas']['Aguas_Andinas']
-        self.assertEqual(empresa['nombre_empresa'], 'Aguas Andinas')
-        self.assertEqual(empresa['total_localidades'], 1)
+        self.assertIn('Aguas_Andinas', estructura['companies'])
+        empresa = estructura['companies']['Aguas_Andinas']
+        self.assertEqual(empresa['company_name'], 'Aguas Andinas')
+        self.assertEqual(empresa['total_localities'], 1)
         self.assertEqual(empresa['total_pdfs'], 1)
         
         # Verificar localidad
-        self.assertIn('Santiago', empresa['localidades'])
-        localidad = empresa['localidades']['Santiago']
-        self.assertEqual(localidad['nombre_localidad'], 'Santiago')
+        self.assertIn('Santiago', empresa['localities'])
+        localidad = empresa['localities']['Santiago']
+        self.assertEqual(localidad['locality_name'], 'Santiago')
         self.assertEqual(len(localidad['pdfs']), 1)
     
     def test_organizar_una_empresa_multiples_localidades(self):
@@ -90,15 +90,15 @@ class TestOrganizarAnalisisJerarquico(unittest.TestCase):
             }
         ]
         
-        estructura = organizar_analisis_jerarquico(pdfs)
+        estructura = organize_hierarchical_analysis(pdfs)
         
-        self.assertEqual(estructura['resumen']['total_empresas'], 1)
-        self.assertEqual(estructura['resumen']['total_localidades'], 3)
-        self.assertEqual(estructura['resumen']['total_pdfs'], 3)
+        self.assertEqual(estructura['summary']['total_companies'], 1)
+        self.assertEqual(estructura['summary']['total_localities'], 3)
+        self.assertEqual(estructura['summary']['total_pdfs'], 3)
         
-        empresa = estructura['empresas']['Aguas_Andinas']
-        self.assertEqual(empresa['total_localidades'], 3)
-        self.assertEqual(len(empresa['localidades']), 3)
+        empresa = estructura['companies']['Aguas_Andinas']
+        self.assertEqual(empresa['total_localities'], 3)
+        self.assertEqual(len(empresa['localities']), 3)
     
     def test_organizar_multiples_empresas(self):
         """Test con múltiples empresas."""
@@ -117,16 +117,16 @@ class TestOrganizarAnalisisJerarquico(unittest.TestCase):
             }
         ]
         
-        estructura = organizar_analisis_jerarquico(pdfs)
+        estructura = organize_hierarchical_analysis(pdfs)
         
-        self.assertEqual(estructura['resumen']['total_empresas'], 3)
-        self.assertEqual(estructura['resumen']['total_localidades'], 3)
-        self.assertEqual(estructura['resumen']['total_pdfs'], 3)
+        self.assertEqual(estructura['summary']['total_companies'], 3)
+        self.assertEqual(estructura['summary']['total_localities'], 3)
+        self.assertEqual(estructura['summary']['total_pdfs'], 3)
         
         # Verificar que todas las empresas existen
-        self.assertIn('Aguas_Andinas', estructura['empresas'])
-        self.assertIn('Essbio', estructura['empresas'])
-        self.assertIn('Esval', estructura['empresas'])
+        self.assertIn('Aguas_Andinas', estructura['companies'])
+        self.assertIn('Essbio', estructura['companies'])
+        self.assertIn('Esval', estructura['companies'])
     
     def test_organizar_multiple_pdfs_misma_localidad(self):
         """Test con múltiples PDFs para la misma localidad."""
@@ -143,10 +143,10 @@ class TestOrganizarAnalisisJerarquico(unittest.TestCase):
             }
         ]
         
-        estructura = organizar_analisis_jerarquico(pdfs)
+        estructura = organize_hierarchical_analysis(pdfs)
         
         # Debe haber 2 PDFs en la misma localidad
-        localidad = estructura['empresas']['Aguas_Andinas']['localidades']['Santiago']
+        localidad = estructura['companies']['Aguas_Andinas']['localities']['Santiago']
         self.assertEqual(len(localidad['pdfs']), 2)
     
     def test_organizar_preserva_datos_analisis(self):
@@ -156,36 +156,36 @@ class TestOrganizarAnalisisJerarquico(unittest.TestCase):
                 "nombre_archivo": "Santiago.pdf",
                 "carpeta": "Aguas_Andinas",
                 "ruta_pdf": "/path/Santiago.pdf",
-                "tamanio_kb": 150.5,
-                "total_paginas": 5,
-                "total_tablas": 2,
-                "total_conceptos": 10,
-                "metodo_extraccion": "pdfplumber",
+                "size_kb": 150.5,
+                "total_pages": 5,
+                "total_tables": 2,
+                "total_concepts": 10,
+                "extraction_method": "pdfplumber",
                 "timestamp": "2024-01-01"
             }
         ]
         
-        estructura = organizar_analisis_jerarquico(pdfs)
+        estructura = organize_hierarchical_analysis(pdfs)
         
-        pdf_analisis = estructura['empresas']['Aguas_Andinas']['localidades']['Santiago']['pdfs'][0]['analisis']
+        pdf_analisis = estructura['companies']['Aguas_Andinas']['localities']['Santiago']['pdfs'][0]['analisis']
         
         self.assertEqual(pdf_analisis['tamanio_kb'], 150.5)
         self.assertEqual(pdf_analisis['total_paginas'], 5)
         self.assertEqual(pdf_analisis['total_tablas'], 2)
-        self.assertEqual(pdf_analisis['total_conceptos'], 10)
+        self.assertEqual(pdf_analisis['total_concepts'], 10)
         self.assertEqual(pdf_analisis['metodo_extraccion'], 'pdfplumber')
 
 
-class TestParsearEstructuraTabla(unittest.TestCase):
+class TestParseTableStructure(unittest.TestCase):
     """Tests para la función parsear_estructura_tabla."""
     
     def test_tabla_vacia(self):
         """Test con tabla vacía."""
-        estructura = parsear_estructura_tabla([])
+        estructura = parse_table_structure([])
         
-        self.assertEqual(estructura['tipo'], 'vacia')
+        self.assertEqual(estructura['type'], 'empty')
         self.assertEqual(len(estructura['secciones']), 0)
-        self.assertEqual(len(estructura['datos_directos']), 0)
+        self.assertEqual(len(estructura['direct_data']), 0)
     
     def test_tabla_simple_sin_secciones(self):
         """Test con tabla simple de pares concepto-valor."""
@@ -195,15 +195,15 @@ class TestParsearEstructuraTabla(unittest.TestCase):
             ['Alcantarillado', '$450']
         ]
         
-        estructura = parsear_estructura_tabla(tabla)
+        estructura = parse_table_structure(tabla)
         
-        self.assertEqual(estructura['tipo'], 'simple')
-        self.assertEqual(len(estructura['datos_directos']), 3)
-        self.assertEqual(estructura['total_conceptos'], 3)
+        self.assertEqual(estructura['type'], 'simple')
+        self.assertEqual(len(estructura['direct_data']), 3)
+        self.assertEqual(estructura['total_concepts'], 3)
         
         # Verificar primer concepto
-        self.assertEqual(estructura['datos_directos'][0]['concepto'], 'Cargo fijo')
-        self.assertEqual(estructura['datos_directos'][0]['valor'], '$1,500')
+        self.assertEqual(estructura['direct_data'][0]['concept'], 'Cargo fijo')
+        self.assertEqual(estructura['direct_data'][0]['value'], '$1,500')
     
     def test_tabla_con_secciones(self):
         """Test con tabla que tiene secciones."""
@@ -216,20 +216,20 @@ class TestParsearEstructuraTabla(unittest.TestCase):
             ['Servicio', '$600']
         ]
         
-        estructura = parsear_estructura_tabla(tabla)
+        estructura = parse_table_structure(tabla)
         
-        self.assertEqual(estructura['tipo'], 'con_secciones')
+        self.assertEqual(estructura['type'], 'con_secciones')
         self.assertEqual(len(estructura['secciones']), 2)
         
         # Verificar primera sección
-        self.assertEqual(estructura['secciones'][0]['nombre_seccion'], 'AGUA POTABLE')
+        self.assertEqual(estructura['secciones'][0]['section_name'], 'AGUA POTABLE')
         self.assertEqual(len(estructura['secciones'][0]['datos']), 2)
         
         # Verificar segunda sección
-        self.assertEqual(estructura['secciones'][1]['nombre_seccion'], 'ALCANTARILLADO')
+        self.assertEqual(estructura['secciones'][1]['section_name'], 'ALCANTARILLADO')
         self.assertEqual(len(estructura['secciones'][1]['datos']), 2)
         
-        self.assertEqual(estructura['total_conceptos'], 4)
+        self.assertEqual(estructura['total_concepts'], 4)
     
     def test_tabla_con_filas_vacias(self):
         """Test con tabla que tiene filas vacías."""
@@ -241,10 +241,10 @@ class TestParsearEstructuraTabla(unittest.TestCase):
             ['Consumo', '$850']
         ]
         
-        estructura = parsear_estructura_tabla(tabla)
+        estructura = parse_table_structure(tabla)
         
         # Solo debe contar las filas con datos
-        self.assertEqual(estructura['total_conceptos'], 2)
+        self.assertEqual(estructura['total_concepts'], 2)
     
     def test_tabla_con_multiples_columnas(self):
         """Test con tabla de múltiples columnas."""
@@ -254,14 +254,14 @@ class TestParsearEstructuraTabla(unittest.TestCase):
             ['Consumo m3', '$850', '$950', '$1,200']
         ]
         
-        estructura = parsear_estructura_tabla(tabla)
+        estructura = parse_table_structure(tabla)
         
         # Primera fila puede ser encabezado
-        self.assertGreater(len(estructura['datos_directos']) + 
+        self.assertGreater(len(estructura['direct_data']) + 
                           sum(len(s['datos']) for s in estructura['secciones']), 0)
 
 
-class TestExtraerTablasPdf(unittest.TestCase):
+class TestExtractPdfTables(unittest.TestCase):
     """Tests para la función extraer_tablas_pdf."""
     
     def setUp(self):
@@ -276,7 +276,7 @@ class TestExtraerTablasPdf(unittest.TestCase):
     def test_archivo_inexistente(self):
         """Test cuando el archivo no existe."""
         ruta_pdf = Path(self.temp_dir) / "noexiste.pdf"
-        resultado = extraer_tablas_pdf(str(ruta_pdf))
+        resultado = extract_pdf_tables(str(ruta_pdf))
         
         self.assertIsNone(resultado)
     
@@ -304,7 +304,7 @@ class TestExtraerTablasPdf(unittest.TestCase):
         ruta_pdf = Path(self.temp_dir) / "test.pdf"
         ruta_pdf.touch()
         
-        resultado = extraer_tablas_pdf(str(ruta_pdf))
+        resultado = extract_pdf_tables(str(ruta_pdf))
         
         self.assertIsNotNone(resultado)
         self.assertEqual(resultado['total_paginas'], 1)
@@ -312,7 +312,7 @@ class TestExtraerTablasPdf(unittest.TestCase):
         self.assertIn('estructura', resultado['tablas'][0])
 
 
-class TestExtraerTextoPdf(unittest.TestCase):
+class TestExtractPdfText(unittest.TestCase):
     """Tests para la función extraer_texto_pdf."""
     
     def setUp(self):
@@ -339,7 +339,7 @@ class TestExtraerTextoPdf(unittest.TestCase):
         ruta_pdf = Path(self.temp_dir) / "test.pdf"
         ruta_pdf.touch()
         
-        texto = extraer_texto_pdf(str(ruta_pdf))
+        texto = extract_pdf_text(str(ruta_pdf))
         
         self.assertIsNotNone(texto)
         self.assertEqual(texto, "Contenido del PDF")
@@ -360,7 +360,7 @@ class TestExtraerTextoPdf(unittest.TestCase):
         ruta_pdf = Path(self.temp_dir) / "test.pdf"
         ruta_pdf.touch()
         
-        texto = extraer_texto_pdf(str(ruta_pdf))
+        texto = extract_pdf_text(str(ruta_pdf))
         
         self.assertIsNotNone(texto)
         self.assertIn("Página 1", texto)
@@ -369,7 +369,7 @@ class TestExtraerTextoPdf(unittest.TestCase):
     def test_extraer_texto_archivo_inexistente(self):
         """Test cuando el archivo no existe."""
         ruta_pdf = Path(self.temp_dir) / "noexiste.pdf"
-        texto = extraer_texto_pdf(str(ruta_pdf))
+        texto = extract_pdf_text(str(ruta_pdf))
         
         self.assertIsNone(texto)
     
@@ -386,12 +386,12 @@ class TestExtraerTextoPdf(unittest.TestCase):
         ruta_pdf = Path(self.temp_dir) / "test.pdf"
         ruta_pdf.touch()
         
-        texto = extraer_texto_pdf(str(ruta_pdf), usar_ocr=False)
+        texto = extract_pdf_text(str(ruta_pdf), use_ocr=False)
         
         self.assertIsNone(texto)
 
 
-class TestExtraerTextoPdfConOcr(unittest.TestCase):
+class TestExtractPdfTextConOcr(unittest.TestCase):
     """Tests para la función extraer_texto_pdf_con_ocr."""
     
     def setUp(self):
@@ -417,7 +417,7 @@ class TestExtraerTextoPdfConOcr(unittest.TestCase):
         ruta_pdf = Path(self.temp_dir) / "test.pdf"
         ruta_pdf.touch()
         
-        texto = extraer_texto_pdf_con_ocr(str(ruta_pdf))
+        texto = extract_pdf_text_with_ocr(str(ruta_pdf))
         
         self.assertIsNotNone(texto)
         self.assertIn("Texto OCR", texto)
@@ -426,12 +426,12 @@ class TestExtraerTextoPdfConOcr(unittest.TestCase):
     def test_extraer_texto_con_ocr_archivo_inexistente(self):
         """Test cuando el archivo no existe."""
         ruta_pdf = Path(self.temp_dir) / "noexiste.pdf"
-        texto = extraer_texto_pdf_con_ocr(str(ruta_pdf))
+        texto = extract_pdf_text_with_ocr(str(ruta_pdf))
         
         self.assertIsNone(texto)
 
 
-class TestObtenerPdfsEnCarpeta(unittest.TestCase):
+class TestGetPdfsInFolder(unittest.TestCase):
     """Tests para la función obtener_pdfs_en_carpeta."""
     
     def setUp(self):
@@ -445,7 +445,7 @@ class TestObtenerPdfsEnCarpeta(unittest.TestCase):
     
     def test_obtener_pdfs_carpeta_vacia(self):
         """Test en carpeta vacía."""
-        pdfs = obtener_pdfs_en_carpeta(self.temp_dir)
+        pdfs = get_pdfs_in_folder(self.temp_dir)
         
         self.assertEqual(len(pdfs), 0)
     
@@ -456,7 +456,7 @@ class TestObtenerPdfsEnCarpeta(unittest.TestCase):
         (Path(self.temp_dir) / "test2.pdf").touch()
         (Path(self.temp_dir) / "otro.txt").touch()  # No PDF
         
-        pdfs = obtener_pdfs_en_carpeta(self.temp_dir, recursivo=False)
+        pdfs = get_pdfs_in_folder(self.temp_dir, recursive=False)
         
         self.assertEqual(len(pdfs), 2)
         self.assertTrue(all(pdf.endswith('.pdf') for pdf in pdfs))
@@ -470,7 +470,7 @@ class TestObtenerPdfsEnCarpeta(unittest.TestCase):
         (Path(self.temp_dir) / "test1.pdf").touch()
         (subdir / "test2.pdf").touch()
         
-        pdfs = obtener_pdfs_en_carpeta(self.temp_dir, recursivo=True)
+        pdfs = get_pdfs_in_folder(self.temp_dir, recursive=True)
         
         self.assertEqual(len(pdfs), 2)
     
@@ -483,19 +483,19 @@ class TestObtenerPdfsEnCarpeta(unittest.TestCase):
         (Path(self.temp_dir) / "test1.pdf").touch()
         (subdir / "test2.pdf").touch()
         
-        pdfs = obtener_pdfs_en_carpeta(self.temp_dir, recursivo=False)
+        pdfs = get_pdfs_in_folder(self.temp_dir, recursive=False)
         
         self.assertEqual(len(pdfs), 1)
     
     def test_obtener_pdfs_carpeta_inexistente(self):
         """Test cuando la carpeta no existe."""
-        pdfs = obtener_pdfs_en_carpeta(str(Path(self.temp_dir) / "noexiste"))
+        pdfs = get_pdfs_in_folder(str(Path(self.temp_dir) / "noexiste"))
         
         self.assertEqual(len(pdfs), 0)
 
 
-class TestObtenerPdfsNuevos(unittest.TestCase):
-    """Tests para la función obtener_pdfs_nuevos."""
+class TestGetNewPdfs(unittest.TestCase):
+    """Tests para la función get_new_pdfs."""
     
     def setUp(self):
         """Configuración para cada test."""
@@ -507,13 +507,13 @@ class TestObtenerPdfsNuevos(unittest.TestCase):
         if Path(self.temp_dir).exists():
             shutil.rmtree(self.temp_dir)
     
-    def test_obtener_pdfs_nuevos_sin_registro(self):
+    def test_get_new_pdfs_sin_registro(self):
         """Test cuando no existe registro previo."""
         # Crear PDFs
         (Path(self.temp_dir) / "test1.pdf").touch()
         (Path(self.temp_dir) / "test2.pdf").touch()
         
-        pdfs_nuevos = obtener_pdfs_nuevos(
+        pdfs_nuevos = get_new_pdfs(
             self.temp_dir,
             str(self.ruta_registro)
         )
@@ -521,7 +521,7 @@ class TestObtenerPdfsNuevos(unittest.TestCase):
         # Todos son nuevos si no hay registro
         self.assertEqual(len(pdfs_nuevos), 2)
     
-    def test_obtener_pdfs_nuevos_con_registro(self):
+    def test_get_new_pdfs_con_registro(self):
         """Test cuando existe registro previo."""
         # Crear PDFs
         pdf1 = Path(self.temp_dir) / "test1.pdf"
@@ -539,7 +539,7 @@ class TestObtenerPdfsNuevos(unittest.TestCase):
         with open(self.ruta_registro, 'w', encoding='utf-8') as f:
             json.dump(registro, f)
         
-        pdfs_nuevos = obtener_pdfs_nuevos(
+        pdfs_nuevos = get_new_pdfs(
             self.temp_dir,
             str(self.ruta_registro)
         )
@@ -548,7 +548,7 @@ class TestObtenerPdfsNuevos(unittest.TestCase):
         self.assertEqual(len(pdfs_nuevos), 1)
         self.assertTrue(str(pdf2) in pdfs_nuevos)
     
-    def test_obtener_pdfs_nuevos_todos_analizados(self):
+    def test_get_new_pdfs_todos_analizados(self):
         """Test cuando todos los PDFs ya fueron analizados."""
         # Crear PDFs
         pdf1 = Path(self.temp_dir) / "test1.pdf"
@@ -564,7 +564,7 @@ class TestObtenerPdfsNuevos(unittest.TestCase):
         with open(self.ruta_registro, 'w', encoding='utf-8') as f:
             json.dump(registro, f)
         
-        pdfs_nuevos = obtener_pdfs_nuevos(
+        pdfs_nuevos = get_new_pdfs(
             self.temp_dir,
             str(self.ruta_registro)
         )
@@ -572,7 +572,7 @@ class TestObtenerPdfsNuevos(unittest.TestCase):
         self.assertEqual(len(pdfs_nuevos), 0)
 
 
-class TestAnalizarPdfs(unittest.TestCase):
+class TestAnalyzePdfs(unittest.TestCase):
     """Tests para el método analizar_pdfs."""
     
     def setUp(self):
@@ -599,14 +599,14 @@ class TestAnalizarPdfs(unittest.TestCase):
         # Mock de extracción
         mock_extraer.return_value = "Texto del PDF"
         
-        resultado = self.servicio.analizar_pdfs(
-            ruta_pdfs=str(self.ruta_pdfs),
-            ruta_registro=str(self.ruta_registro),
-            usar_ocr=False,
-            solo_nuevos=True
+        resultado = self.servicio.analyze_pdfs(
+            pdfs_path=str(self.ruta_pdfs),
+            registry_path=str(self.ruta_registro),
+            use_ocr=False,
+            only_new=True
         )
         
-        self.assertTrue(resultado['exito'])
+        self.assertTrue(resultado['success'])
         self.assertTrue(resultado['es_primera_vez'])
         self.assertEqual(resultado['total_pdfs'], 2)
         self.assertEqual(resultado['analizados'], 2)
@@ -624,9 +624,9 @@ class TestAnalizarPdfs(unittest.TestCase):
         mock_extraer.return_value = "Texto del PDF"
         
         # Primera ejecución
-        resultado1 = self.servicio.analizar_pdfs(
-            ruta_pdfs=str(self.ruta_pdfs),
-            ruta_registro=str(self.ruta_registro)
+        resultado1 = self.servicio.analyze_pdfs(
+            pdfs_path=str(self.ruta_pdfs),
+            registry_path=str(self.ruta_registro)
         )
         
         self.assertEqual(resultado1['analizados'], 2)
@@ -636,12 +636,12 @@ class TestAnalizarPdfs(unittest.TestCase):
         pdf3.touch()
         
         # Segunda ejecución - solo el nuevo
-        resultado2 = self.servicio.analizar_pdfs(
-            ruta_pdfs=str(self.ruta_pdfs),
-            ruta_registro=str(self.ruta_registro)
+        resultado2 = self.servicio.analyze_pdfs(
+            pdfs_path=str(self.ruta_pdfs),
+            registry_path=str(self.ruta_registro)
         )
         
-        self.assertTrue(resultado2['exito'])
+        self.assertTrue(resultado2['success'])
         self.assertFalse(resultado2['es_primera_vez'])
         self.assertEqual(resultado2['analizados'], 1)
     
@@ -655,23 +655,23 @@ class TestAnalizarPdfs(unittest.TestCase):
         # Simular que el segundo falla
         mock_extraer.side_effect = ["Texto PDF 1", None]
         
-        resultado = self.servicio.analizar_pdfs(
-            ruta_pdfs=str(self.ruta_pdfs),
-            ruta_registro=str(self.ruta_registro)
+        resultado = self.servicio.analyze_pdfs(
+            pdfs_path=str(self.ruta_pdfs),
+            registry_path=str(self.ruta_registro)
         )
         
-        self.assertTrue(resultado['exito'])
+        self.assertTrue(resultado['success'])
         self.assertEqual(resultado['analizados'], 1)
         self.assertEqual(resultado['fallidos'], 1)
     
     def test_analizar_pdfs_carpeta_vacia(self):
         """Test cuando no hay PDFs."""
-        resultado = self.servicio.analizar_pdfs(
-            ruta_pdfs=str(self.ruta_pdfs),
-            ruta_registro=str(self.ruta_registro)
+        resultado = self.servicio.analyze_pdfs(
+            pdfs_path=str(self.ruta_pdfs),
+            registry_path=str(self.ruta_registro)
         )
         
-        self.assertTrue(resultado['exito'])
+        self.assertTrue(resultado['success'])
         self.assertEqual(resultado['total_pdfs'], 0)
         self.assertEqual(resultado['analizados'], 0)
     
@@ -682,13 +682,13 @@ class TestAnalizarPdfs(unittest.TestCase):
         
         mock_extraer.return_value = "Texto extraído con OCR"
         
-        resultado = self.servicio.analizar_pdfs(
-            ruta_pdfs=str(self.ruta_pdfs),
-            ruta_registro=str(self.ruta_registro),
-            usar_ocr=True
+        resultado = self.servicio.analyze_pdfs(
+            pdfs_path=str(self.ruta_pdfs),
+            registry_path=str(self.ruta_registro),
+            use_ocr=True
         )
         
-        self.assertTrue(resultado['exito'])
+        self.assertTrue(resultado['success'])
         self.assertTrue(resultado['usado_ocr'])
         self.assertEqual(resultado['analizados'], 1)
     
@@ -699,12 +699,12 @@ class TestAnalizarPdfs(unittest.TestCase):
         
         mock_extraer.return_value = "Texto del PDF de prueba"
         
-        resultado = self.servicio.analizar_pdfs(
-            ruta_pdfs=str(self.ruta_pdfs),
-            ruta_registro=str(self.ruta_registro)
+        resultado = self.servicio.analyze_pdfs(
+            pdfs_path=str(self.ruta_pdfs),
+            registry_path=str(self.ruta_registro)
         )
         
-        self.assertTrue(resultado['exito'])
+        self.assertTrue(resultado['success'])
         self.assertEqual(len(resultado['pdfs_analizados']), 1)
         
         pdf_analizado = resultado['pdfs_analizados'][0]

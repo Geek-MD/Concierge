@@ -114,13 +114,13 @@ def verificar_redireccion_url(url: str, timeout: int = 10) -> Optional[str]:
         return None
 
 
-def guardar_json(datos: dict[str, Any], ruta_archivo: str) -> bool:
+def guardar_json(data: dict[str, Any], ruta_archivo: str) -> bool:
     """
-    Guarda datos en un archivo JSON.
+    Guarda data en un archivo JSON.
     
     Args:
-        datos: Diccionario con los datos a guardar
-        ruta_archivo: Ruta del archivo donde guardar los datos
+        data: Diccionario con los data a guardar
+        ruta_archivo: Ruta del archivo donde guardar los data
         
     Returns:
         True si se guardó exitosamente, False en caso contrario
@@ -130,7 +130,7 @@ def guardar_json(datos: dict[str, Any], ruta_archivo: str) -> bool:
         ruta.parent.mkdir(parents=True, exist_ok=True)
         
         with open(ruta, 'w', encoding='utf-8') as f:
-            json.dump(datos, f, ensure_ascii=False, indent=2)
+            json.dump(data, f, ensure_ascii=False, indent=2)
         return True
     except Exception as e:
         print(f"Error al guardar JSON: {e}")
@@ -139,13 +139,13 @@ def guardar_json(datos: dict[str, Any], ruta_archivo: str) -> bool:
 
 def cargar_json(ruta_archivo: str) -> Optional[dict[str, Any]]:
     """
-    Carga datos desde un archivo JSON.
+    Carga data desde un archivo JSON.
     
     Args:
         ruta_archivo: Ruta del archivo JSON a cargar
         
     Returns:
-        Diccionario con los datos cargados, o None si hay error
+        Diccionario con los data cargados, o None si hay error
     """
     try:
         with open(ruta_archivo, 'r', encoding='utf-8') as f:
@@ -157,7 +157,7 @@ def cargar_json(ruta_archivo: str) -> Optional[dict[str, Any]]:
 
 def extraer_url_por_texto(url: str, texto_buscar: str, timeout: int = 10) -> Optional[str]:
     """
-    Extrae la URL de un enlace en una página HTML buscando por el texto del enlace.
+    Extrae la URL de un enlace en una página HTML buscando por el text del enlace.
     
     Args:
         url: URL de la página a analizar
@@ -173,7 +173,7 @@ def extraer_url_por_texto(url: str, texto_buscar: str, timeout: int = 10) -> Opt
         
         soup = BeautifulSoup(response.content, 'html.parser')
         
-        # Buscar el enlace por texto
+        # Buscar el enlace por text
         link = soup.find('a', string=lambda text: text and texto_buscar.lower() in text.lower())
         
         if link and hasattr(link, 'get'):
@@ -185,37 +185,37 @@ def extraer_url_por_texto(url: str, texto_buscar: str, timeout: int = 10) -> Opt
         
         return None
     except Exception as e:
-        print(f"Error al extraer URL por texto: {e}")
+        print(f"Error al extraer URL por text: {e}")
         return None
 
 
-def extraer_nombre_empresa(texto: str) -> Optional[str]:
+def extraer_nombre_empresa(text: str) -> Optional[str]:
     """
-    Extrae el nombre de la empresa de agua desde un texto con formato "Empresa - Texto".
+    Extrae el nombre de la company de agua desde un text con formato "Empresa - Texto".
     
     Args:
-        texto: Texto que contiene el nombre de la empresa y descripción
+        text: Texto que contiene el nombre de la company y descripción
         
     Returns:
-        String con el nombre de la empresa (antes del guión), o None si no se encuentra
+        String con el nombre de la company (antes del guión), o None si no se encuentra
         
     Examples:
         >>> extraer_nombre_empresa("Aguas Andinas - Tarifas vigentes")
         "Aguas Andinas"
     """
     try:
-        if not texto or not isinstance(texto, str):
+        if not text or not isinstance(text, str):
             return None
         
-        # Buscar el guión y extraer texto antes de él
-        if " - " in texto:
-            nombre = texto.split(" - ")[0].strip()
+        # Buscar el guión y extraer text antes de él
+        if " - " in text:
+            nombre = text.split(" - ")[0].strip()
             return nombre if nombre else None
         
-        # Si no hay guión, devolver el texto completo limpio
-        return texto.strip() if texto.strip() else None
+        # Si no hay guión, devolver el text completo limpio
+        return text.strip() if text.strip() else None
     except Exception as e:
-        print(f"Error al extraer nombre de empresa: {e}")
+        print(f"Error al extraer nombre de company: {e}")
         return None
 
 
@@ -224,10 +224,10 @@ def extraer_datos_tabla_tarifas(
     base_url: str
 ) -> list[dict[str, Any]]:
     """
-    Extrae datos de una tabla HTML de tarifas de agua.
+    Extrae data de una table HTML de tarifas de agua.
     
-    Busca tablas con columnas "Localidades" y "Tarifa vigente", y extrae
-    las filas que tienen datos en ambas columnas. De la columna "Tarifa vigente"
+    Busca tables con columnas "Localidades" y "Tarifa vigente", y extrae
+    las rows que tienen data en ambas columnas. De la columna "Tarifa vigente"
     extrae la URL del archivo PDF.
     
     Args:
@@ -235,21 +235,21 @@ def extraer_datos_tabla_tarifas(
         base_url: URL base para resolver URLs relativas
         
     Returns:
-        Lista de diccionarios con los datos extraídos, cada uno con:
-        - localidad: Nombre de la localidad
+        Lista de diccionarios con los data extraídos, cada uno con:
+        - locality: Nombre de la locality
         - url_pdf: URL absoluta del archivo PDF de la tarifa
     """
     try:
         soup = BeautifulSoup(html_content, 'html.parser')
         datos_extraidos: list[dict[str, Any]] = []
         
-        # Buscar todas las tablas
-        tablas = soup.find_all('table')
+        # Buscar todas las tables
+        tables = soup.find_all('table')
         
-        for tabla in tablas:
-            # Buscar encabezados de la tabla
+        for table in tables:
+            # Buscar encabezados de la table
             headers = []
-            header_row = tabla.find('tr')
+            header_row = table.find('tr')
             if header_row:
                 headers = [th.get_text(strip=True) for th in header_row.find_all(['th', 'td'])]
             
@@ -263,110 +263,110 @@ def extraer_datos_tabla_tarifas(
             
             for i, header in enumerate(headers):
                 header_lower = header.lower()
-                if 'localidad' in header_lower:
+                if 'locality' in header_lower:
                     idx_localidades = i
                 if 'tarifa' in header_lower and 'vigente' in header_lower:
                     idx_tarifa = i
             
-            # Si no se encuentran ambas columnas, probar con la siguiente tabla
+            # Si no se encuentran ambas columnas, probar con la siguiente table
             if idx_localidades == -1 or idx_tarifa == -1:
                 continue
             
-            # Extraer filas de datos
-            filas = tabla.find_all('tr')[1:]  # Saltar encabezado
+            # Extraer rows de data
+            rows = table.find_all('tr')[1:]  # Saltar encabezado
             
-            for fila in filas:
-                celdas = fila.find_all(['td', 'th'])
+            for row in rows:
+                cells = row.find_all(['td', 'th'])
                 
-                # Verificar que haya suficientes celdas
-                if len(celdas) <= max(idx_localidades, idx_tarifa):
+                # Verificar que haya suficientes cells
+                if len(cells) <= max(idx_localidades, idx_tarifa):
                     continue
                 
-                # Extraer localidad
-                localidad = celdas[idx_localidades].get_text(strip=True)
+                # Extraer locality
+                locality = cells[idx_localidades].get_text(strip=True)
                 
-                # Extraer URL del PDF desde la celda de tarifa vigente
-                celda_tarifa = celdas[idx_tarifa]
+                # Extraer URL del PDF desde la cell de tarifa vigente
+                celda_tarifa = cells[idx_tarifa]
                 enlace_pdf = celda_tarifa.find('a')
                 
-                # Solo agregar si ambos datos existen
-                if localidad and enlace_pdf:
+                # Solo agregar si ambos data existen
+                if locality and enlace_pdf:
                     href = enlace_pdf.get('href')
                     if href:
                         url_pdf = urljoin(base_url, href)
                         datos_extraidos.append({
-                            'localidad': localidad,
+                            'locality': locality,
                             'url_pdf': url_pdf
                         })
         
         return datos_extraidos
     except Exception as e:
-        print(f"Error al extraer datos de tabla de tarifas: {e}")
+        print(f"Error al extraer data de table de tarifas: {e}")
         return []
 
 
 def extraer_empresas_agua(url: str, timeout: int = 10) -> list[dict[str, Any]]:
     """
-    Extrae información de todas las empresas de agua desde la página de tarifas vigentes.
+    Extrae información de todas las companies de agua desde la página de tarifas vigentes.
     
-    Para cada empresa encontrada, extrae:
-    - Nombre de la empresa
-    - Lista de localidades con sus respectivas URLs de PDF de tarifas
+    Para cada company encontrada, extrae:
+    - Nombre de la company
+    - Lista de localities con sus respectivas URLs de PDF de tarifas
     
     Args:
         url: URL de la página de tarifas vigentes
         timeout: Tiempo máximo de espera en segundos
         
     Returns:
-        Lista de diccionarios, uno por empresa, con:
-        - empresa: Nombre de la empresa de agua
-        - tarifas: Lista de diccionarios con localidad y url_pdf
+        Lista de diccionarios, uno por company, con:
+        - company: Nombre de la company de agua
+        - tarifas: Lista de diccionarios con locality y url_pdf
     """
     try:
         response = requests.get(url, timeout=timeout, allow_redirects=True)
         response.raise_for_status()
         
         soup = BeautifulSoup(response.content, 'html.parser')
-        empresas: list[dict[str, Any]] = []
+        companies: list[dict[str, Any]] = []
         
-        # Buscar elementos que contengan nombres de empresas
+        # Buscar elementos que contengan nombres de companies
         # Típicamente serán encabezados (h2, h3, h4) o elementos con formato "Empresa - Tarifas vigentes"
         posibles_empresas = soup.find_all(['h2', 'h3', 'h4', 'strong', 'b'])
         
         for elemento in posibles_empresas:
-            texto = elemento.get_text(strip=True)
+            text = elemento.get_text(strip=True)
             
-            # Verificar si el texto contiene "Tarifas vigentes" o similar
-            if 'tarifa' not in texto.lower():
+            # Verificar si el text contiene "Tarifas vigentes" o similar
+            if 'tarifa' not in text.lower():
                 continue
             
-            # Extraer nombre de empresa
-            nombre_empresa = extraer_nombre_empresa(texto)
+            # Extraer nombre de company
+            nombre_empresa = extraer_nombre_empresa(text)
             if not nombre_empresa:
                 continue
             
-            # Buscar la tabla siguiente al encabezado de la empresa
+            # Buscar la table siguiente al encabezado de la company
             tabla_siguiente = elemento.find_next('table')
             if not tabla_siguiente:
                 continue
             
-            # Extraer datos de la tabla
+            # Extraer data de la table
             tabla_html = str(tabla_siguiente)
             datos_tarifas = extraer_datos_tabla_tarifas(
                 tabla_html,
                 response.url
             )
             
-            # Solo agregar si hay datos de tarifas
+            # Solo agregar si hay data de tarifas
             if datos_tarifas:
-                empresas.append({
-                    'empresa': nombre_empresa,
+                companies.append({
+                    'company': nombre_empresa,
                     'tarifas': datos_tarifas
                 })
         
-        return empresas
+        return companies
     except Exception as e:
-        print(f"Error al extraer empresas de agua: {e}")
+        print(f"Error al extraer companies de agua: {e}")
         return []
 
 
@@ -414,318 +414,318 @@ def descargar_pdf(url: str, ruta_destino: str, timeout: int = 30) -> bool:
         return False
 
 
-def parsear_estructura_tabla(tabla: list[list[Any]]) -> dict[str, Any]:
+def parse_table_structure(table: list[list[Any]]) -> dict[str, Any]:
     """
-    Parsea la estructura de una tabla identificando secciones y pares concepto-valor.
+    Parses the structure de una table identifying sections y concept-value pairs.
     
-    Las tablas pueden contener:
-    1. Encabezados de sección: filas con solo 1 columna con datos o texto destacado
-    2. Pares concepto-valor: filas con 2 o más columnas (concepto + valor/precio)
+    Tables can contain:
+    1. Section headers: rows with only 1 column with data o highlighted text
+    2. Pares concept-value: rows with 2 or more columns (concept + value/precio)
     
     Args:
-        tabla: Lista de filas, donde cada fila es una lista de celdas
+        table: List of rows, where each row is a list of cells
         
     Returns:
-        Dict con la estructura parseada:
+        Dict with parsed structure:
         {
-            "tipo": "simple" | "con_secciones",
-            "secciones": [
+            "type": "simple" | "con_secciones",
+            "sections": [
                 {
-                    "nombre_seccion": str,
-                    "datos": [{"concepto": str, "valor": str}, ...]
+                    "section_name": str,
+                    "data": [{"concept": str, "value": str}, ...]
                 },
                 ...
             ],
-            "datos_directos": [{"concepto": str, "valor": str}, ...],
-            "total_filas": int,
-            "total_conceptos": int
+            "direct_data": [{"concept": str, "value": str}, ...],
+            "total_rows": int,
+            "total_concepts": int
         }
     """
-    if not tabla:
+    if not table:
         return {
-            "tipo": "vacia",
-            "secciones": [],
-            "datos_directos": [],
-            "total_filas": 0,
-            "total_conceptos": 0
+            "type": "empty",
+            "sections": [],
+            "direct_data": [],
+            "total_rows": 0,
+            "total_concepts": 0
         }
     
-    secciones: list[dict[str, Any]] = []
-    datos_directos: list[dict[str, Any]] = []
-    seccion_actual: Optional[dict[str, Any]] = None
-    total_conceptos = 0
+    sections: list[dict[str, Any]] = []
+    direct_data: list[dict[str, Any]] = []
+    current_section: Optional[dict[str, Any]] = None
+    total_concepts = 0
     
-    for fila in tabla:
-        # Limpiar celdas
-        celdas = [str(cell).strip() if cell else "" for cell in fila]
-        celdas_no_vacias = [c for c in celdas if c]
+    for row in table:
+        # Clean cells
+        cells = [str(cell).strip() if cell else "" for cell in row]
+        non_empty_cells = [c for c in cells if c]
         
-        if not celdas_no_vacias:
-            # Fila vacía, ignorar
+        if not non_empty_cells:
+            # Empty row, ignore
             continue
         
-        # Detectar si es encabezado de sección
-        # Criterios: solo 1 celda con contenido, o todas las celdas menos la primera vacías
-        if len(celdas_no_vacias) == 1:
-            # Es un encabezado de sección
-            nombre_seccion = celdas_no_vacias[0]
+        # Detect if it is a section header
+        # Criteria: only 1 cell with content, o all cells except the first are empty
+        if len(non_empty_cells) == 1:
+            # It is a section header
+            section_name = non_empty_cells[0]
             
-            # Guardar sección anterior si existe
-            if seccion_actual is not None:
-                secciones.append(seccion_actual)
+            # Save previous section if exists
+            if current_section is not None:
+                sections.append(current_section)
             
-            # Iniciar nueva sección
-            seccion_actual = {
-                "nombre_seccion": nombre_seccion,
-                "datos": []
+            # Initialize new section
+            current_section = {
+                "section_name": section_name,
+                "data": []
             }
         
-        # Detectar si es un par concepto-valor
-        elif len(celdas_no_vacias) >= 2:
-            # Es un par concepto-valor (o múltiples valores)
-            concepto = celdas_no_vacias[0]
-            valores = celdas_no_vacias[1:]
+        # Detectar si es un par concept-value
+        elif len(non_empty_cells) >= 2:
+            # It is a concept-value pair (o multiple values)
+            concept = non_empty_cells[0]
+            values = non_empty_cells[1:]
             
-            # Detectar si contiene números, precios o medidas
+            # Detect if contains numbers, prices or measures
             es_dato_valor = any(
-                _contiene_numero_o_precio(v) for v in valores
+                _contains_number_or_price(v) for v in values
             )
             
-            if es_dato_valor or len(valores) == 1:
-                # Es un par concepto-valor válido
+            if es_dato_valor or len(values) == 1:
+                # It is a concept-value pair válido
                 par_datos: dict[str, Any] = {
-                    "concepto": concepto,
-                    "valor": valores[0] if len(valores) == 1 else valores,
-                    "valores_adicionales": valores[1:] if len(valores) > 1 else []
+                    "concept": concept,
+                    "value": values[0] if len(values) == 1 else values,
+                    "additional_values": values[1:] if len(values) > 1 else []
                 }
                 
-                if seccion_actual is not None:
-                    seccion_actual["datos"].append(par_datos)
+                if current_section is not None:
+                    current_section["data"].append(par_datos)
                 else:
-                    datos_directos.append(par_datos)
+                    direct_data.append(par_datos)
                 
-                total_conceptos += 1
+                total_concepts += 1
             else:
-                # Podría ser un encabezado de múltiples columnas
-                # Tratarlo como sección
-                nombre_seccion = " - ".join(celdas_no_vacias)
+                # Could be a multi-column header
+                # Treat it as section
+                section_name = " - ".join(non_empty_cells)
                 
-                if seccion_actual is not None:
-                    secciones.append(seccion_actual)
+                if current_section is not None:
+                    sections.append(current_section)
                 
-                seccion_actual = {
-                    "nombre_seccion": nombre_seccion,
-                    "datos": []
+                current_section = {
+                    "section_name": section_name,
+                    "data": []
                 }
     
-    # Guardar última sección si existe
-    if seccion_actual is not None:
-        secciones.append(seccion_actual)
+    # Save last section if exists
+    if current_section is not None:
+        sections.append(current_section)
     
     return {
-        "tipo": "con_secciones" if secciones else "simple",
-        "secciones": secciones,
-        "datos_directos": datos_directos,
-        "total_filas": len(tabla),
-        "total_conceptos": total_conceptos
+        "type": "con_secciones" if sections else "simple",
+        "sections": sections,
+        "direct_data": direct_data,
+        "total_rows": len(table),
+        "total_concepts": total_concepts
     }
 
 
-def _contiene_numero_o_precio(texto: str) -> bool:
+def _contains_number_or_price(text: str) -> bool:
     """
-    Detecta si un texto contiene números, precios o valores.
+    Detects if a text contains numbers, prices or values.
     
     Args:
-        texto: Texto a analizar
+        text: Text to analyze
         
     Returns:
-        True si contiene números, precios o valores
+        True if it contains numbers, prices or values
     """
-    # Patrones comunes de precios y valores
-    patrones = [
-        r'\d+',  # Números
-        r'\$\s*\d+',  # Precio con $
-        r'\d+\s*,\s*\d+',  # Números con comas (miles)
-        r'\d+\.\d+',  # Números decimales
-        r'\d+\s*%',  # Porcentajes
-        r'\d+\s*(m3|m²|km|kg|lt|uf)',  # Unidades de medida
-        r'(SI|NO|si|no)',  # Valores booleanos
+    # Common patterns for prices and values
+    patterns = [
+        r'\d+',  # Numbers
+        r'\$\s*\d+',  # Price with $
+        r'\d+\s*,\s*\d+',  # Numbers con comas (miles)
+        r'\d+\.\d+',  # Numbers decimales
+        r'\d+\s*%',  # Percentages
+        r'\d+\s*(m3|m²|km|kg|lt|uf)',  # Units of measure
+        r'(SI|NO|si|no)',  # Boolean values
     ]
     
-    for patron in patrones:
-        if re.search(patron, texto, re.IGNORECASE):
+    for pattern in patterns:
+        if re.search(pattern, text, re.IGNORECASE):
             return True
     
     return False
 
 
-def extraer_texto_pdf(ruta_pdf: str, usar_ocr: bool = False) -> Optional[str]:
+def extract_pdf_text(pdf_path: str, use_ocr: bool = False) -> Optional[str]:
     """
-    Extrae texto de un archivo PDF.
+    Extracts text from a PDF file.
     
     Args:
-        ruta_pdf: Ruta al archivo PDF
-        usar_ocr: Si es True, usa OCR para PDFs escaneados
+        pdf_path: Path to the PDF file
+        use_ocr: If True, uses OCR for scanned PDFs
         
     Returns:
-        String con el texto extraído o None si hay error
+        String with extracted text or None if error
     """
     try:
         from pypdf import PdfReader
         
-        ruta = Path(ruta_pdf)
+        ruta = Path(pdf_path)
         if not ruta.exists():
-            print(f"Error: El archivo {ruta_pdf} no existe")
+            print(f"Error: El archivo {pdf_path} no existe")
             return None
         
-        # Intentar extraer texto directamente del PDF
+        # Try to extract text directly from PDF
         reader = PdfReader(str(ruta))
-        texto = ""
+        text = ""
         
         for page in reader.pages:
-            texto += page.extract_text() + "\n"
+            text += page.extract_text() + "\n"
         
-        # Si el texto está vacío o muy corto, puede ser un PDF escaneado
-        if usar_ocr and (not texto.strip() or len(texto.strip()) < 50):
+        # If text is empty or very short, may be a scanned PDF
+        if use_ocr and (not text.strip() or len(text.strip()) < 50):
             print("Texto extraído muy corto, intentando con OCR...")
-            return extraer_texto_pdf_con_ocr(ruta_pdf)
+            return extract_pdf_text_with_ocr(pdf_path)
         
-        return texto.strip() if texto.strip() else None
+        return text.strip() if text.strip() else None
         
     except Exception as e:
-        print(f"Error al extraer texto del PDF {ruta_pdf}: {e}")
+        print(f"Error al extraer text del PDF {pdf_path}: {e}")
         return None
 
 
-def extraer_tablas_pdf(ruta_pdf: str) -> Optional[dict[str, Any]]:
+def extract_pdf_tables(pdf_path: str) -> Optional[dict[str, Any]]:
     """
-    Extrae tablas de un archivo PDF detectando bordes y estructura.
+    Extracts tables from a PDF file detecting borders and structure.
     
-    Usa pdfplumber que es capaz de detectar tablas, bordes y 
-    mantener la estructura de los datos tabulares.
+    Uses pdfplumber which can detect tables, borders and 
+    maintain the structure of tabular data.
     
     Args:
-        ruta_pdf: Ruta al archivo PDF
+        pdf_path: Path to the PDF file
         
     Returns:
-        Dict con texto y tablas extraídas, o None si hay error.
+        Dict with text and extracted tables, or None if error.
         Estructura:
         {
-            "texto": "texto completo del PDF",
-            "tablas": [
+            "text": "text completo del PDF",
+            "tables": [
                 {
-                    "pagina": 1,
+                    "page": 1,
                     "tabla_numero": 1,
-                    "filas": [[cell1, cell2, ...], ...],
-                    "texto_formateado": "representación en texto"
+                    "rows": [[cell1, cell2, ...], ...],
+                    "texto_formateado": "representación en text"
                 },
                 ...
             ],
-            "total_paginas": N,
-            "total_tablas": M
+            "total_pages": N,
+            "total_tables": M
         }
     """
     try:
         import pdfplumber
         
-        ruta = Path(ruta_pdf)
+        ruta = Path(pdf_path)
         if not ruta.exists():
-            print(f"Error: El archivo {ruta_pdf} no existe")
+            print(f"Error: El archivo {pdf_path} no existe")
             return None
         
-        resultado = {
-            "texto": "",
-            "tablas": [],
-            "total_paginas": 0,
-            "total_tablas": 0
+        result = {
+            "text": "",
+            "tables": [],
+            "total_pages": 0,
+            "total_tables": 0
         }
         
         with pdfplumber.open(str(ruta)) as pdf:
-            resultado["total_paginas"] = len(pdf.pages)
+            result["total_pages"] = len(pdf.pages)
             
-            for num_pagina, page in enumerate(pdf.pages, 1):
-                # Extraer texto de la página
-                texto_pagina = page.extract_text()
-                if texto_pagina:
-                    resultado["texto"] += f"\n--- Página {num_pagina} ---\n"
-                    resultado["texto"] += texto_pagina + "\n"
+            for page_num, page in enumerate(pdf.pages, 1):
+                # Extraer text de la página
+                page_text = page.extract_text()
+                if page_text:
+                    result["text"] += f"\n--- Página {page_num} ---\n"
+                    result["text"] += page_text + "\n"
                 
-                # Extraer tablas de la página
+                # Extraer tables de la página
                 tablas_pagina = page.extract_tables()
                 
-                for num_tabla, tabla in enumerate(tablas_pagina, 1):
-                    if tabla:
-                        # Parsear estructura de tabla
-                        estructura = parsear_estructura_tabla(tabla)
+                for table_num, table in enumerate(tablas_pagina, 1):
+                    if table:
+                        # Parsear structure de table
+                        structure = parse_table_structure(table)
                         
-                        # Formatear tabla como texto
-                        texto_tabla = f"\n=== Tabla {resultado['total_tablas'] + 1} (Página {num_pagina}) ===\n"
+                        # Format table as text
+                        table_text = f"\n=== Tabla {result['total_tablas'] + 1} (Página {page_num}) ===\n"
                         
-                        # Agregar filas de la tabla
-                        for fila in tabla:
-                            # Limpiar None y espacios extras
-                            fila_limpia = [str(cell).strip() if cell else "" for cell in fila]
-                            texto_tabla += " | ".join(fila_limpia) + "\n"
+                        # Add table rows
+                        for row in table:
+                            # Clean None and extra spaces
+                            fila_limpia = [str(cell).strip() if cell else "" for cell in row]
+                            table_text += " | ".join(fila_limpia) + "\n"
                         
-                        resultado["tablas"].append({
-                            "pagina": num_pagina,
-                            "tabla_numero": num_tabla,
-                            "filas": tabla,
-                            "texto_formateado": texto_tabla,
-                            "estructura": estructura
+                        result["tables"].append({
+                            "page": page_num,
+                            "tabla_numero": table_num,
+                            "rows": table,
+                            "texto_formateado": table_text,
+                            "structure": structure
                         })
                         
-                        resultado["total_tablas"] += 1
+                        result["total_tables"] += 1
                         
-                        # Agregar tabla al texto general
-                        resultado["texto"] += texto_tabla
+                        # Add table to general text
+                        result["text"] += table_text
         
-        return resultado if resultado["texto"].strip() else None
+        return result if result["text"].strip() else None
         
     except ImportError as e:
         print(f"Error: pdfplumber no está instalado: {e}")
         print("Instala: pip install pdfplumber")
         return None
     except Exception as e:
-        print(f"Error al extraer tablas del PDF {ruta_pdf}: {e}")
+        print(f"Error al extraer tables del PDF {pdf_path}: {e}")
         return None
 
 
-def extraer_texto_pdf_con_ocr(ruta_pdf: str) -> Optional[str]:
+def extract_pdf_text_with_ocr(pdf_path: str) -> Optional[str]:
     """
-    Extrae texto de un PDF escaneado usando OCR.
+    Extracts text from a scanned PDF using OCR.
     
-    Requiere:
+    Requires:
         - pytesseract
         - pdf2image
-        - tesseract-ocr instalado en el sistema
+        - tesseract-ocr installed on the system
     
     Args:
-        ruta_pdf: Ruta al archivo PDF
+        pdf_path: Path to the PDF file
         
     Returns:
-        String con el texto extraído o None si hay error
+        String with extracted text or None if error
     """
     try:
         import pytesseract
         from pdf2image import convert_from_path
         
-        ruta = Path(ruta_pdf)
+        ruta = Path(pdf_path)
         if not ruta.exists():
-            print(f"Error: El archivo {ruta_pdf} no existe")
+            print(f"Error: El archivo {pdf_path} no existe")
             return None
         
-        # Convertir PDF a imágenes
-        imagenes = convert_from_path(str(ruta))
+        # Convert PDF to images
+        images = convert_from_path(str(ruta))
         
         # Aplicar OCR a cada página
-        texto_completo = ""
-        for i, imagen in enumerate(imagenes, 1):
-            texto_pagina = pytesseract.image_to_string(imagen, lang='spa')
-            texto_completo += f"\n--- Página {i} ---\n"
-            texto_completo += texto_pagina + "\n"
+        full_text = ""
+        for i, image in enumerate(images, 1):
+            page_text = pytesseract.image_to_string(image, lang='spa')
+            full_text += f"\n--- Página {i} ---\n"
+            full_text += page_text + "\n"
         
-        return texto_completo.strip() if texto_completo.strip() else None
+        return full_text.strip() if full_text.strip() else None
         
     except ImportError as e:
         print(f"Error: Librerías necesarias no instaladas: {e}")
@@ -733,176 +733,176 @@ def extraer_texto_pdf_con_ocr(ruta_pdf: str) -> Optional[str]:
         print("Además necesitas instalar tesseract-ocr en el sistema")
         return None
     except Exception as e:
-        print(f"Error al aplicar OCR al PDF {ruta_pdf}: {e}")
+        print(f"Error al aplicar OCR al PDF {pdf_path}: {e}")
         return None
 
 
-def obtener_pdfs_en_carpeta(ruta_carpeta: str, recursivo: bool = True) -> list[str]:
+def get_pdfs_in_folder(folder_path: str, recursive: bool = True) -> list[str]:
     """
-    Obtiene la lista de archivos PDF en una carpeta.
+    Gets the list of PDF files in a folder.
     
     Args:
-        ruta_carpeta: Ruta a la carpeta
-        recursivo: Si es True, busca en subcarpetas
+        folder_path: Path to the folder
+        recursive: Si es True, busca en subcarpetas
         
     Returns:
-        Lista con las rutas completas de los archivos PDF encontrados
+        List with complete paths of found PDF files
     """
     try:
-        carpeta = Path(ruta_carpeta)
-        if not carpeta.exists():
-            print(f"Error: La carpeta {ruta_carpeta} no existe")
+        folder = Path(folder_path)
+        if not folder.exists():
+            print(f"Error: La folder {folder_path} no existe")
             return []
         
-        if recursivo:
-            pdfs = list(carpeta.rglob("*.pdf"))
+        if recursive:
+            pdfs = list(folder.rglob("*.pdf"))
         else:
-            pdfs = list(carpeta.glob("*.pdf"))
+            pdfs = list(folder.glob("*.pdf"))
         
         return [str(pdf) for pdf in sorted(pdfs)]
         
     except Exception as e:
-        print(f"Error al listar PDFs en {ruta_carpeta}: {e}")
+        print(f"Error al listar PDFs en {folder_path}: {e}")
         return []
 
 
-def organizar_analisis_jerarquico(pdfs_analizados: list[dict[str, Any]]) -> dict[str, Any]:
+def organize_hierarchical_analysis(analyzed_pdfs: list[dict[str, Any]]) -> dict[str, Any]:
     """
-    Organiza los análisis de PDFs en una estructura jerárquica por compañía y localidad.
+    Organizes PDF analyses in a hierarchical structure by company and locality.
     
     Estructura resultante:
     {
-        "empresas": {
+        "companies": {
             "Aguas_Andinas": {
-                "nombre_empresa": "Aguas Andinas",
-                "localidades": {
+                "company_name": "Aguas Andinas",
+                "localities": {
                     "Santiago": {
-                        "nombre_localidad": "Santiago",
-                        "archivo_pdf": "Santiago.pdf",
-                        "analisis": {...}
+                        "locality_name": "Santiago",
+                        "pdf_file": "Santiago.pdf",
+                        "analysis": {...}
                     },
                     "Maipu": {...}
                 }
             },
             "Essbio": {...}
         },
-        "resumen": {
-            "total_empresas": N,
-            "total_localidades": M,
+        "summary": {
+            "total_companies": N,
+            "total_localities": M,
             "total_pdfs": K
         }
     }
     
     Args:
-        pdfs_analizados: Lista de PDFs analizados con su información
+        analyzed_pdfs: List of analyzed PDFs with their information
         
     Returns:
-        Dict con estructura jerárquica organizada por empresa y localidad
+        Dict with hierarchical structure organized by company and locality
     """
-    estructura = {
-        "empresas": {},
-        "resumen": {
-            "total_empresas": 0,
-            "total_localidades": 0,
+    structure = {
+        "companies": {},
+        "summary": {
+            "total_companies": 0,
+            "total_localities": 0,
             "total_pdfs": 0
         }
     }
     
-    for pdf_data in pdfs_analizados:
-        # Obtener empresa (carpeta padre)
-        empresa = pdf_data.get("carpeta", "Sin_Empresa")
+    for pdf_data in analyzed_pdfs:
+        # Get company (parent folder)
+        company = pdf_data.get("folder", "Sin_Empresa")
         
-        # Obtener localidad (nombre del archivo sin extensión)
-        nombre_archivo = pdf_data.get("nombre_archivo", "")
-        localidad = nombre_archivo.replace(".pdf", "").replace(".PDF", "")
+        # Get locality (filename without extension)
+        filename = pdf_data.get("filename", "")
+        locality = filename.replace(".pdf", "").replace(".PDF", "")
         
-        # Crear entrada de empresa si no existe
-        if empresa not in estructura["empresas"]:
-            # Convertir nombre normalizado a nombre legible
-            nombre_empresa_legible = empresa.replace("_", " ")
+        # Create company entry if it does not exist
+        if company not in structure["companies"]:
+            # Convert normalized name to readable name
+            readable_company_name = company.replace("_", " ")
             
-            estructura["empresas"][empresa] = {
-                "nombre_empresa": nombre_empresa_legible,
-                "nombre_normalizado": empresa,
-                "localidades": {},
-                "total_localidades": 0,
+            structure["companies"][company] = {
+                "company_name": readable_company_name,
+                "normalized_name": company,
+                "localities": {},
+                "total_localities": 0,
                 "total_pdfs": 0
             }
-            estructura["resumen"]["total_empresas"] += 1
+            structure["summary"]["total_companies"] += 1
         
-        # Crear entrada de localidad si no existe
-        if localidad not in estructura["empresas"][empresa]["localidades"]:
-            nombre_localidad_legible = localidad.replace("_", " ")
+        # Create locality entry if it does not exist
+        if locality not in structure["companies"][company]["localities"]:
+            readable_locality_name = locality.replace("_", " ")
             
-            estructura["empresas"][empresa]["localidades"][localidad] = {
-                "nombre_localidad": nombre_localidad_legible,
-                "nombre_normalizado": localidad,
+            structure["companies"][company]["localities"][locality] = {
+                "locality_name": readable_locality_name,
+                "normalized_name": locality,
                 "pdfs": []
             }
-            estructura["empresas"][empresa]["total_localidades"] += 1
-            estructura["resumen"]["total_localidades"] += 1
+            structure["companies"][company]["total_localities"] += 1
+            structure["summary"]["total_localities"] += 1
         
-        # Agregar análisis del PDF a la localidad
-        estructura["empresas"][empresa]["localidades"][localidad]["pdfs"].append({
-            "archivo_pdf": nombre_archivo,
-            "ruta_completa": pdf_data.get("ruta_pdf", ""),
-            "analisis": {
-                "tamanio_kb": pdf_data.get("tamanio_kb", 0),
-                "total_paginas": pdf_data.get("total_paginas", 0),
-                "total_tablas": pdf_data.get("total_tablas", 0),
-                "total_conceptos": pdf_data.get("total_conceptos", 0),
-                "total_secciones": pdf_data.get("total_secciones", 0),
-                "longitud_texto": pdf_data.get("longitud_texto", 0),
-                "metodo_extraccion": pdf_data.get("metodo_extraccion", ""),
-                "usado_ocr": pdf_data.get("usado_ocr", False),
+        # Add PDF analysis to locality
+        structure["companies"][company]["localities"][locality]["pdfs"].append({
+            "pdf_file": filename,
+            "full_path": pdf_data.get("pdf_path", ""),
+            "analysis": {
+                "size_kb": pdf_data.get("size_kb", 0),
+                "total_pages": pdf_data.get("total_pages", 0),
+                "total_tables": pdf_data.get("total_tables", 0),
+                "total_concepts": pdf_data.get("total_concepts", 0),
+                "total_sections": pdf_data.get("total_sections", 0),
+                "text_length": pdf_data.get("text_length", 0),
+                "extraction_method": pdf_data.get("extraction_method", ""),
+                "used_ocr": pdf_data.get("used_ocr", False),
                 "timestamp": pdf_data.get("timestamp", ""),
-                "texto_extraido": pdf_data.get("texto_extraido", ""),
-                "tablas": pdf_data.get("tablas", [])
+                "extracted_text": pdf_data.get("extracted_text", ""),
+                "tables": pdf_data.get("tables", [])
             }
         })
         
-        estructura["empresas"][empresa]["total_pdfs"] += 1
-        estructura["resumen"]["total_pdfs"] += 1
+        structure["companies"][company]["total_pdfs"] += 1
+        structure["summary"]["total_pdfs"] += 1
     
-    return estructura
+    return structure
 
 
-def obtener_pdfs_nuevos(
-    ruta_carpeta: str, 
-    ruta_registro: str,
-    recursivo: bool = True
+def get_new_pdfs(
+    folder_path: str, 
+    registry_path: str,
+    recursive: bool = True
 ) -> list[str]:
     """
-    Obtiene la lista de PDFs nuevos que no han sido analizados.
+    Gets the list of new PDFs that have not been analyzed.
     
     Args:
-        ruta_carpeta: Ruta a la carpeta con PDFs
-        ruta_registro: Ruta al archivo JSON con registro de PDFs analizados
-        recursivo: Si es True, busca en subcarpetas
+        folder_path: Path to the folder con PDFs
+        registry_path: Ruta al archivo JSON con registry de PDFs analizados
+        recursive: Si es True, busca en subcarpetas
         
     Returns:
-        Lista con las rutas de PDFs nuevos (no analizados)
+        List with paths of new PDFs (not analyzed)
     """
     try:
-        # Obtener todos los PDFs en la carpeta
-        todos_pdfs = obtener_pdfs_en_carpeta(ruta_carpeta, recursivo)
+        # Get all PDFs in folder
+        all_pdfs = get_pdfs_in_folder(folder_path, recursive)
         
-        # Cargar registro de PDFs analizados
-        registro = cargar_json(ruta_registro)
+        # Cargar registry de PDFs analizados
+        registry = cargar_json(registry_path)
         
-        # Si no hay registro, todos son nuevos
-        if not registro:
-            return todos_pdfs
+        # Si no hay registry, todos son nuevos
+        if not registry:
+            return all_pdfs
         
-        # Obtener conjunto de PDFs ya analizados
-        pdfs_analizados = set()
-        for pdf_info in registro.get("pdfs_analizados", []):
-            pdfs_analizados.add(pdf_info.get("ruta_pdf"))
+        # Get set of already analyzed PDFs
+        analyzed_pdfs = set()
+        for pdf_info in registry.get("analyzed_pdfs", []):
+            analyzed_pdfs.add(pdf_info.get("pdf_path"))
         
-        # Filtrar solo los nuevos
-        pdfs_nuevos = [pdf for pdf in todos_pdfs if pdf not in pdfs_analizados]
+        # Filter only new ones
+        new_pdfs = [pdf for pdf in all_pdfs if pdf not in analyzed_pdfs]
         
-        return pdfs_nuevos
+        return new_pdfs
         
     except Exception as e:
         print(f"Error al obtener PDFs nuevos: {e}")

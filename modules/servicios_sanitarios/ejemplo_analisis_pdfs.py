@@ -35,12 +35,12 @@ def main():
     print("   • Extrayendo texto...")
     print()
     
-    resultado = servicio.analizar_pdfs(
+    resultado = servicio.analyze_pdfs(
         ruta_pdfs="data/pdfs",
         ruta_registro="data/registro_analisis.json",
-        usar_ocr=False,  # Cambiar a True para usar OCR en PDFs escaneados
-        extraer_tablas=True,  # True para detectar tablas y bordes
-        solo_nuevos=True
+        use_ocr=False,  # Cambiar a True para usar OCR en PDFs escaneados
+        extract_tables=True,  # True para detectar tablas y bordes
+        only_new=True
     )
     
     if resultado["exito"]:
@@ -177,9 +177,9 @@ def main():
     print("  - Valores: pueden ser precios, cantidades, porcentajes, etc.")
     print()
     print("  Modos de extracción:")
-    print("  - extraer_tablas=True (por defecto): usa pdfplumber para detectar tablas")
-    print("  - extraer_tablas=False: usa pypdf para extracción simple de texto")
-    print("  - usar_ocr=True: usa OCR para PDFs escaneados (requiere tesseract)")
+    print("  - extract_tables=True (por defecto): usa pdfplumber para detectar tablas")
+    print("  - extract_tables=False: usa pypdf para extracción simple de texto")
+    print("  - use_ocr=True: usa OCR para PDFs escaneados (requiere tesseract)")
     print()
     print("  Requisitos:")
     print("  - pip install pdfplumber (para detección de tablas)")
@@ -193,8 +193,8 @@ def main():
     print("    * Windows: descargar desde https://github.com/UB-Mannheim/tesseract/wiki")
     print()
     print("  Uso recomendado:")
-    print("  1. extraer_tablas=True, usar_ocr=False (por defecto, mejor para PDFs con tablas)")
-    print("  2. Si falla, probar con usar_ocr=True para PDFs escaneados")
+    print("  1. extract_tables=True, use_ocr=False (por defecto, mejor para PDFs con tablas)")
+    print("  2. Si falla, probar con use_ocr=True para PDFs escaneados")
     print()
 
 
