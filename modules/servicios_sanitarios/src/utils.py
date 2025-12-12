@@ -366,3 +366,47 @@ def extraer_empresas_agua(url: str, timeout: int = 10) -> List[Dict[str, Any]]:
     except Exception as e:
         print(f"Error al extraer empresas de agua: {e}")
         return []
+
+
+def descargar_pdf(url: str, ruta_destino: str, timeout: int = 30) -> bool:
+    """
+    Descarga un archivo PDF desde una URL y lo guarda en disco.
+    
+    Args:
+        url: URL del PDF a descargar
+        ruta_destino: Ruta donde guardar el PDF
+        timeout: Tiempo máximo de espera en segundos
+        
+    Returns:
+        True si la descarga fue exitosa, False en caso contrario
+    """
+    try:
+        # Crear directorios si no existen
+        ruta = Path(ruta_destino)
+        ruta.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Descargar el PDF
+        response = requests.get(url, timeout=timeout, allow_redirects=True, stream=True)
+        response.raise_for_status()
+        
+        # Verificar que el contenido sea PDF
+        content_type = response.headers.get('content-type', '').lower()
+        if 'pdf' not in content_type and not url.lower().endswith('.pdf'):
+            print(f"Advertencia: El contenido no parece ser un PDF (content-type: {content_type})")
+        
+        # Guardar el archivo
+        with open(ruta, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+        
+        # Verificar que el archivo se guardó y tiene contenido
+        if ruta.exists() and ruta.stat().st_size > 0:
+            return True
+        else:
+            print(f"Error: El archivo descargado está vacío o no existe")
+            return False
+            
+    except Exception as e:
+        print(f"Error al descargar PDF desde {url}: {e}")
+        return False

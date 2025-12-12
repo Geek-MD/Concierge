@@ -26,6 +26,13 @@ Este es un prototipo funcional desarrollado para validar la arquitectura y funci
   - Detecta cambios automáticamente y mantiene historial
   - Guarda datos estructurados en formato JSON
   - Cumple con estándares de calidad: ruff y mypy
+- **Descarga de PDFs**:
+  - Descarga automática de PDFs desde URLs almacenadas en JSON
+  - Primera vez: descarga TODOS los PDFs
+  - Siguientes veces: descarga solo PDFs NUEVOS
+  - Organiza PDFs en carpetas por empresa
+  - Mantiene registro de descargas con historial
+  - Manejo de errores y reintentos
 
 ## Estructura del Módulo
 
@@ -115,6 +122,35 @@ resultado = servicio.monitorear_tarifas_vigentes(ruta_salida="data/tarifas_empre
 # }
 
 # Ver ejemplo completo en ejemplo_tarifas.py
+
+# Descargar PDFs de tarifas
+resultado = servicio.descargar_pdfs(
+    ruta_json="data/tarifas_empresas.json",
+    ruta_pdfs="data/pdfs",
+    ruta_registro="data/registro_descargas.json"
+)
+
+# El resultado incluye:
+# - exito: Si la operación fue exitosa
+# - total_pdfs: Total de PDFs en el JSON
+# - descargados: Cantidad de PDFs descargados
+# - fallidos: Cantidad de PDFs que fallaron
+# - es_primera_vez: True si es la primera descarga
+# - pdfs_descargados: Lista de PDFs descargados exitosamente
+# - pdfs_fallidos: Lista de PDFs que fallaron
+# - timestamp: Momento de la operación
+# - mensaje: Descripción del resultado
+
+# Comportamiento:
+# - Primera vez: descarga TODOS los PDFs
+# - Siguientes veces: descarga solo PDFs NUEVOS
+
+# Los PDFs se organizan en carpetas por empresa:
+# data/pdfs/Aguas_Andinas/Santiago.pdf
+# data/pdfs/Aguas_Andinas/Maipú.pdf
+# data/pdfs/Essbio/Concepción.pdf
+
+# Ver ejemplo completo en ejemplo_descarga_pdfs.py
 ```
 
 ## Desarrollo
@@ -137,7 +173,7 @@ python -m pytest tests/
 
 ## Roadmap
 
-### Versión Actual (v0.2.0 - PoC)
+### Versión Actual (v0.3.0 - PoC)
 - [x] Estructura básica del módulo
 - [x] Implementación de funcionalidad core
 - [x] Pruebas unitarias básicas
@@ -152,8 +188,17 @@ python -m pytest tests/
   - [x] Detección automática de cambios
   - [x] Tests completos (49 tests, 100% passing)
   - [x] Cumplimiento ruff y mypy (100%)
+- [x] **Descarga de PDFs**
+  - [x] Descarga automática desde URLs del JSON
+  - [x] Detección de PDFs nuevos vs ya descargados
+  - [x] Organización en carpetas por empresa
+  - [x] Registro de descargas con historial
+  - [x] Tests completos (8 tests, 100% passing)
+  - [x] Total: 57 tests pasando
 
 ### Versión Futura
+- [ ] Extracción de datos desde los PDFs (parseo de tarifas)
+- [ ] Análisis y comparación de tarifas entre empresas
 - [ ] Automatización de monitoreo (chequeo diario programado)
 - [ ] Notificaciones cuando se detecten cambios
 - [ ] Análisis de variaciones históricas de tarifas

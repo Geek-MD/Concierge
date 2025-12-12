@@ -6,6 +6,7 @@ Este archivo contiene la lógica principal del módulo de servicios sanitarios.
 
 from typing import Dict, List, Optional, Any
 from datetime import datetime
+from pathlib import Path
 from .utils import (
     generate_id, 
     format_timestamp, 
@@ -13,7 +14,8 @@ from .utils import (
     guardar_json,
     extraer_url_por_texto,
     extraer_empresas_agua,
-    cargar_json
+    cargar_json,
+    descargar_pdf
 )
 
 
@@ -410,5 +412,159 @@ class ServiciosSanitarios:
                 "Primera verificación guardada" if es_primera_vez else
                 "Cambios detectados y guardados" if cambios_detectados else
                 "Sin cambios, no se guardó"
+            )
+        }
+    
+    def descargar_pdfs(
+        self,
+        ruta_json: str = "data/tarifas_empresas.json",
+        ruta_pdfs: str = "data/pdfs",
+        ruta_registro: str = "data/registro_descargas.json"
+    ) -> Dict[str, Any]:
+        """
+        Descarga PDFs de tarifas desde las URLs almacenadas en el archivo JSON.
+        
+        Este método monitorea el archivo JSON con las URLs de PDFs y:
+        - Si es la primera vez (no existe registro), descarga TODOS los PDFs
+        - Si ya existe registro, descarga solo los PDFs NUEVOS
+        
+        Los PDFs se organizan en carpetas por empresa:
+        data/pdfs/Empresa_Nombre/localidad_nombre.pdf
+        
+        Args:
+            ruta_json: Ruta del archivo JSON con las URLs de PDFs
+            ruta_pdfs: Directorio base donde guardar los PDFs
+            ruta_registro: Ruta del archivo JSON para registrar descargas
+            
+        Returns:
+            Dict con información del resultado:
+            - exito: True si la operación fue exitosa
+            - total_pdfs: Total de PDFs en el JSON
+            - descargados: Cantidad de PDFs descargados
+            - fallidos: Cantidad de PDFs que fallaron
+            - es_primera_vez: True si es la primera descarga
+            - pdfs_descargados: Lista de PDFs descargados exitosamente
+            - pdfs_fallidos: Lista de PDFs que fallaron
+            - timestamp: Momento de la operación
+            - mensaje: Descripción del resultado
+        """
+        timestamp = datetime.now()
+        
+        # Cargar datos de URLs desde JSON
+        datos_urls = cargar_json(ruta_json)
+        if not datos_urls:
+            return {
+                "exito": False,
+                "error": f"No se pudo cargar el archivo JSON: {ruta_json}",
+                "timestamp": format_timestamp(timestamp)
+            }
+        
+        # Obtener empresas y sus tarifas
+        empresas = datos_urls.get("empresas", [])
+        if not empresas:
+            return {
+                "exito": False,
+                "error": "No se encontraron empresas en el archivo JSON",
+                "timestamp": format_timestamp(timestamp)
+            }
+        
+        # Cargar registro de descargas previas
+        registro_previo = cargar_json(ruta_registro)
+        es_primera_vez = registro_previo is None
+        
+        # Obtener PDFs ya descargados (si existen)
+        pdfs_previos = set()
+        if not es_primera_vez and registro_previo:
+            for pdf_info in registro_previo.get("pdfs_descargados", []):
+                pdfs_previos.add(pdf_info["url_pdf"])
+        
+        # Procesar descargas
+        total_pdfs = 0
+        pdfs_descargados: List[Dict[str, str]] = []
+        pdfs_fallidos: List[Dict[str, str]] = []
+        
+        for empresa_data in empresas:
+            empresa = empresa_data["empresa"]
+            # Normalizar nombre de empresa para usar como directorio
+            empresa_dir = empresa.replace(" ", "_").replace("/", "_")
+            
+            for tarifa in empresa_data.get("tarifas", []):
+                localidad = tarifa["localidad"]
+                url_pdf = tarifa["url_pdf"]
+                total_pdfs += 1
+                
+                # Si no es primera vez, verificar si ya fue descargado
+                if not es_primera_vez and url_pdf in pdfs_previos:
+                    continue
+                
+                # Normalizar nombre de localidad para archivo
+                localidad_file = localidad.replace(" ", "_").replace("/", "_")
+                # PDF va directo en carpeta de empresa: empresa/localidad.pdf
+                ruta_pdf = Path(ruta_pdfs) / empresa_dir / f"{localidad_file}.pdf"
+                
+                # Intentar descargar
+                if descargar_pdf(url_pdf, str(ruta_pdf)):
+                    pdfs_descargados.append({
+                        "empresa": empresa,
+                        "localidad": localidad,
+                        "url_pdf": url_pdf,
+                        "ruta_local": str(ruta_pdf),
+                        "timestamp": format_timestamp(timestamp)
+                    })
+                else:
+                    pdfs_fallidos.append({
+                        "empresa": empresa,
+                        "localidad": localidad,
+                        "url_pdf": url_pdf,
+                        "error": "Fallo en descarga"
+                    })
+        
+        # Preparar registro actualizado
+        pdfs_totales_descargados = []
+        if not es_primera_vez and registro_previo:
+            # Mantener registros previos
+            pdfs_totales_descargados = registro_previo.get("pdfs_descargados", [])
+        
+        # Agregar nuevos
+        pdfs_totales_descargados.extend(pdfs_descargados)
+        
+        # Guardar registro actualizado
+        registro = {
+            "ultima_actualizacion": format_timestamp(timestamp),
+            "total_pdfs_descargados": len(pdfs_totales_descargados),
+            "pdfs_descargados": pdfs_totales_descargados,
+            "historial_descargas": [
+                {
+                    "timestamp": format_timestamp(timestamp),
+                    "descargados": len(pdfs_descargados),
+                    "fallidos": len(pdfs_fallidos),
+                    "es_primera_vez": es_primera_vez
+                }
+            ] if es_primera_vez else registro_previo.get("historial_descargas", []) + [{
+                "timestamp": format_timestamp(timestamp),
+                "descargados": len(pdfs_descargados),
+                "fallidos": len(pdfs_fallidos),
+                "es_primera_vez": False
+            }]
+        }
+        
+        guardado = guardar_json(registro, ruta_registro)
+        
+        return {
+            "exito": True,
+            "total_pdfs": total_pdfs,
+            "descargados": len(pdfs_descargados),
+            "fallidos": len(pdfs_fallidos),
+            "es_primera_vez": es_primera_vez,
+            "pdfs_descargados": pdfs_descargados,
+            "pdfs_fallidos": pdfs_fallidos,
+            "ruta_pdfs": ruta_pdfs,
+            "ruta_registro": ruta_registro,
+            "registro_guardado": guardado,
+            "timestamp": format_timestamp(timestamp),
+            "mensaje": (
+                f"Primera descarga: {len(pdfs_descargados)} PDFs descargados" if es_primera_vez else
+                f"Descargados {len(pdfs_descargados)} PDFs nuevos" if len(pdfs_descargados) > 0 else
+                "No hay PDFs nuevos para descargar"
             )
         }
