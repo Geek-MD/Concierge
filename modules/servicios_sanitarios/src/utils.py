@@ -241,7 +241,7 @@ def extraer_datos_tabla_tarifas(
     """
     try:
         soup = BeautifulSoup(html_content, 'html.parser')
-        datos_extraidos: List[dict[str, Any]] = []
+        datos_extraidos: list[dict[str, Any]] = []
         
         # Buscar todas las tablas
         tablas = soup.find_all('table')
@@ -327,7 +327,7 @@ def extraer_empresas_agua(url: str, timeout: int = 10) -> list[dict[str, Any]]:
         response.raise_for_status()
         
         soup = BeautifulSoup(response.content, 'html.parser')
-        empresas: List[dict[str, Any]] = []
+        empresas: list[dict[str, Any]] = []
         
         # Buscar elementos que contengan nombres de empresas
         # Típicamente serán encabezados (h2, h3, h4) o elementos con formato "Empresa - Tarifas vigentes"
@@ -766,7 +766,7 @@ def obtener_pdfs_en_carpeta(ruta_carpeta: str, recursivo: bool = True) -> list[s
         return []
 
 
-def organizar_analisis_jerarquico(pdfs_analizados: List[dict[str, Any]]) -> dict[str, Any]:
+def organizar_analisis_jerarquico(pdfs_analizados: list[dict[str, Any]]) -> dict[str, Any]:
     """
     Organiza los análisis de PDFs en una estructura jerárquica por compañía y localidad.
     
