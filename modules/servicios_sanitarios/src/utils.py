@@ -1,5 +1,5 @@
 """
-Utilidades y funciones auxiliares para el módulo de servicios sanitarios.
+Utilities and helper functions for the sanitary services module.
 """
 
 import json
@@ -16,60 +16,60 @@ from bs4 import BeautifulSoup
 
 def generate_id() -> str:
     """
-    Genera un ID único para identificar elementos del sistema.
+    Generate a unique ID to identify system elements.
     
     Returns:
-        String con un UUID único
+        String with a unique UUID
     """
     return str(uuid.uuid4())
 
 
 def format_timestamp(dt: datetime) -> str:
     """
-    Formatea un timestamp en formato ISO 8601.
+    Format a timestamp in ISO 8601 format.
     
     Args:
-        dt: Objeto datetime a formatear
+        dt: Datetime object to format
         
     Returns:
-        String con el timestamp formateado
+        String with the formatted timestamp
     """
     return dt.isoformat()
 
 
 def validar_prioridad(prioridad: str) -> bool:
     """
-    Valida que una prioridad sea válida.
+    Validate that a priority is valid.
     
     Args:
-        prioridad: String con la prioridad a validar
+        prioridad: String with the priority to validate
         
     Returns:
-        True si es válida, False en caso contrario
+        True if it's valid, False otherwise
     """
     return prioridad in ["baja", "media", "alta", "critica"]
 
 
 def obtener_fecha_actual() -> datetime:
     """
-    Obtiene la fecha y hora actuales.
+    Get the current date and time.
     
     Returns:
-        Objeto datetime con la fecha/hora actual
+        Datetime object with the current date/time
     """
     return datetime.now()
 
 
 def formatear_duracion(inicio: datetime, fin: Optional[datetime] = None) -> str:
     """
-    Calcula y formatea la duración entre dos fechas.
+    Calculate and format the duration between two dates.
     
     Args:
-        inicio: Fecha de inicio
-        fin: Fecha de fin (si no se provee, usa la fecha actual)
+        inicio: Start date
+        fin: End date (if not provided, uses current date)
         
     Returns:
-        String con la duración formateada
+        String with the formatted duration
     """
     if fin is None:
         fin = datetime.now()
@@ -97,14 +97,14 @@ def formatear_duracion(inicio: datetime, fin: Optional[datetime] = None) -> str:
 
 def verificar_redireccion_url(url: str, timeout: int = 10) -> Optional[str]:
     """
-    Verifica la URL a la que redirecciona una página web.
+    Check the URL to which a web page redirects.
     
     Args:
-        url: URL inicial a verificar
-        timeout: Tiempo máximo de espera en segundos
+        url: Initial URL to check
+        timeout: Maximum wait time in seconds
         
     Returns:
-        String con la URL final tras las redirecciones, o None si hay error
+        String with the final URL after redirections, or None if there's an error
     """
     try:
         response = requests.get(url, timeout=timeout, allow_redirects=True)
@@ -116,14 +116,14 @@ def verificar_redireccion_url(url: str, timeout: int = 10) -> Optional[str]:
 
 def guardar_json(data: dict[str, Any], ruta_archivo: str) -> bool:
     """
-    Guarda data en un archivo JSON.
+    Save data to a JSON file.
     
     Args:
-        data: Diccionario con los data a guardar
-        ruta_archivo: Ruta del archivo donde guardar los data
+        data: Dictionary with the data to save
+        ruta_archivo: Path to the file where to save the data
         
     Returns:
-        True si se guardó exitosamente, False en caso contrario
+        True if saved successfully, False otherwise
     """
     try:
         ruta = Path(ruta_archivo)
@@ -139,13 +139,13 @@ def guardar_json(data: dict[str, Any], ruta_archivo: str) -> bool:
 
 def cargar_json(ruta_archivo: str) -> Optional[dict[str, Any]]:
     """
-    Carga data desde un archivo JSON.
+    Load data from a JSON file.
     
     Args:
-        ruta_archivo: Ruta del archivo JSON a cargar
+        ruta_archivo: Path to the JSON file to load
         
     Returns:
-        Diccionario con los data cargados, o None si hay error
+        Dictionary with the loaded data, or None if there's an error
     """
     try:
         with open(ruta_archivo, 'r', encoding='utf-8') as f:
@@ -157,15 +157,15 @@ def cargar_json(ruta_archivo: str) -> Optional[dict[str, Any]]:
 
 def extraer_url_por_texto(url: str, texto_buscar: str, timeout: int = 10) -> Optional[str]:
     """
-    Extrae la URL de un enlace en una página HTML buscando por el text del enlace.
+    Extract the URL of a link in an HTML page by searching for the link text.
     
     Args:
-        url: URL de la página a analizar
-        texto_buscar: Texto del enlace a buscar
-        timeout: Tiempo máximo de espera en segundos
+        url: URL of the page to analyze
+        texto_buscar: Text of the link to search for
+        timeout: Maximum wait time in seconds
         
     Returns:
-        String con la URL absoluta del enlace encontrado, o None si no se encuentra
+        String with the absolute URL of the found link, or None if not found
     """
     try:
         response = requests.get(url, timeout=timeout, allow_redirects=True)
@@ -173,11 +173,11 @@ def extraer_url_por_texto(url: str, texto_buscar: str, timeout: int = 10) -> Opt
         
         soup = BeautifulSoup(response.content, 'html.parser')
         
-        # Buscar el enlace por text
+        # Search for the link by text
         link = soup.find('a', string=lambda text: text and texto_buscar.lower() in text.lower())
         
         if link and hasattr(link, 'get'):
-            # Convertir a URL absoluta si es relativa
+            # Convert to absolute URL if relative
             href = link.get('href')
             if href and isinstance(href, str):
                 url_absoluta = urljoin(url, href)
@@ -191,13 +191,13 @@ def extraer_url_por_texto(url: str, texto_buscar: str, timeout: int = 10) -> Opt
 
 def extraer_nombre_empresa(text: str) -> Optional[str]:
     """
-    Extrae el nombre de la company de agua desde un text con formato "Empresa - Texto".
+    Extract the water company name from text with format "Company - Text".
     
     Args:
-        text: Texto que contiene el nombre de la company y descripción
+        text: Text containing the company name and description
         
     Returns:
-        String con el nombre de la company (antes del guión), o None si no se encuentra
+        String with the company name (before the dash), or None if not found
         
     Examples:
         >>> extraer_nombre_empresa("Aguas Andinas - Tarifas vigentes")
@@ -207,12 +207,12 @@ def extraer_nombre_empresa(text: str) -> Optional[str]:
         if not text or not isinstance(text, str):
             return None
         
-        # Buscar el guión y extraer text antes de él
+        # Search for the dash and extract text before it
         if " - " in text:
             nombre = text.split(" - ")[0].strip()
             return nombre if nombre else None
         
-        # Si no hay guión, devolver el text completo limpio
+        # If there's no dash, return the complete clean text
         return text.strip() if text.strip() else None
     except Exception as e:
         print(f"Error al extraer nombre de company: {e}")
@@ -224,78 +224,78 @@ def extraer_datos_tabla_tarifas(
     base_url: str
 ) -> list[dict[str, Any]]:
     """
-    Extrae data de una table HTML de tarifas de agua.
+    Extract data from an HTML table of water tariffs.
     
-    Busca tables con columnas "Localidades" y "Tarifa vigente", y extrae
-    las rows que tienen data en ambas columnas. De la columna "Tarifa vigente"
-    extrae la URL del archivo PDF.
+    Searches for tables with "Localidades" and "Tarifa vigente" columns, and extracts
+    rows that have data in both columns. From the "Tarifa vigente" column,
+    it extracts the PDF file URL.
     
     Args:
-        html_content: Contenido HTML de la página
-        base_url: URL base para resolver URLs relativas
+        html_content: HTML content of the page
+        base_url: Base URL to resolve relative URLs
         
     Returns:
-        Lista de diccionarios con los data extraídos, cada uno con:
-        - locality: Nombre de la locality
-        - url_pdf: URL absoluta del archivo PDF de la tarifa
+        List of dictionaries with the extracted data, each with:
+        - localidad: Name of the locality
+        - url_pdf: Absolute URL of the tariff PDF file
     """
     try:
         soup = BeautifulSoup(html_content, 'html.parser')
         datos_extraidos: list[dict[str, Any]] = []
         
-        # Buscar todas las tables
+        # Search for all tables
         tables = soup.find_all('table')
         
         for table in tables:
-            # Buscar encabezados de la table
+            # Search for table headers
             headers = []
             header_row = table.find('tr')
             if header_row:
                 headers = [th.get_text(strip=True) for th in header_row.find_all(['th', 'td'])]
             
-            # Verificar si tiene las columnas requeridas
+            # Check if it has the required columns
             if not headers:
                 continue
                 
-            # Buscar índices de las columnas (case-insensitive)
+            # Search for column indices (case-insensitive)
             idx_localidades = -1
             idx_tarifa = -1
             
             for i, header in enumerate(headers):
                 header_lower = header.lower()
-                if 'locality' in header_lower:
+                if 'localidad' in header_lower:
                     idx_localidades = i
                 if 'tarifa' in header_lower and 'vigente' in header_lower:
                     idx_tarifa = i
             
-            # Si no se encuentran ambas columnas, probar con la siguiente table
+            # If both columns are not found, try with the next table
             if idx_localidades == -1 or idx_tarifa == -1:
                 continue
             
-            # Extraer rows de data
-            rows = table.find_all('tr')[1:]  # Saltar encabezado
+            # Extract data rows
+            rows = table.find_all('tr')[1:]  # Skip header
             
             for row in rows:
                 cells = row.find_all(['td', 'th'])
                 
-                # Verificar que haya suficientes cells
+                # Check that there are enough cells
                 if len(cells) <= max(idx_localidades, idx_tarifa):
                     continue
                 
-                # Extraer locality
-                locality = cells[idx_localidades].get_text(strip=True)
+                # Extract locality
+                localidad = cells[idx_localidades].get_text(strip=True)
                 
-                # Extraer URL del PDF desde la cell de tarifa vigente
+                # Extract PDF URL from the current tariff cell
                 celda_tarifa = cells[idx_tarifa]
                 enlace_pdf = celda_tarifa.find('a')
                 
-                # Solo agregar si ambos data existen
-                if locality and enlace_pdf:
+                # Only add if both data exist
+                if localidad and enlace_pdf:
                     href = enlace_pdf.get('href')
                     if href:
                         url_pdf = urljoin(base_url, href)
                         datos_extraidos.append({
-                            'locality': locality,
+                            'localidad': localidad,
                             'url_pdf': url_pdf
                         })
         
@@ -307,64 +307,64 @@ def extraer_datos_tabla_tarifas(
 
 def extraer_empresas_agua(url: str, timeout: int = 10) -> list[dict[str, Any]]:
     """
-    Extrae información de todas las companies de agua desde la página de tarifas vigentes.
+    Extract information from all water companies from the current tariffs page.
     
-    Para cada company encontrada, extrae:
-    - Nombre de la company
-    - Lista de localities con sus respectivas URLs de PDF de tarifas
+    For each company found, it extracts:
+    - Company name
+    - List of localities with their respective tariff PDF URLs
     
     Args:
-        url: URL de la página de tarifas vigentes
-        timeout: Tiempo máximo de espera en segundos
+        url: URL of the current tariffs page
+        timeout: Maximum wait time in seconds
         
     Returns:
-        Lista de diccionarios, uno por company, con:
-        - company: Nombre de la company de agua
-        - tarifas: Lista de diccionarios con locality y url_pdf
+        List of dictionaries, one per company, with:
+        - empresa: Name of the water company
+        - tarifas: List of dictionaries with localidad and url_pdf
     """
     try:
         response = requests.get(url, timeout=timeout, allow_redirects=True)
         response.raise_for_status()
         
         soup = BeautifulSoup(response.content, 'html.parser')
-        companies: list[dict[str, Any]] = []
+        empresas: list[dict[str, Any]] = []
         
-        # Buscar elementos que contengan nombres de companies
-        # Típicamente serán encabezados (h2, h3, h4) o elementos con formato "Empresa - Tarifas vigentes"
+        # Search for elements containing company names
+        # Typically they will be headers (h2, h3, h4) or elements with format "Company - Current Tariffs"
         posibles_empresas = soup.find_all(['h2', 'h3', 'h4', 'strong', 'b'])
         
         for elemento in posibles_empresas:
             text = elemento.get_text(strip=True)
             
-            # Verificar si el text contiene "Tarifas vigentes" o similar
+            # Check if the text contains "Tarifas vigentes" or similar
             if 'tarifa' not in text.lower():
                 continue
             
-            # Extraer nombre de company
+            # Extract company name
             nombre_empresa = extraer_nombre_empresa(text)
             if not nombre_empresa:
                 continue
             
-            # Buscar la table siguiente al encabezado de la company
+            # Search for the table following the company header
             tabla_siguiente = elemento.find_next('table')
             if not tabla_siguiente:
                 continue
             
-            # Extraer data de la table
+            # Extract data from the table
             tabla_html = str(tabla_siguiente)
             datos_tarifas = extraer_datos_tabla_tarifas(
                 tabla_html,
                 response.url
             )
             
-            # Solo agregar si hay data de tarifas
+            # Only add if there is tariff data
             if datos_tarifas:
-                companies.append({
-                    'company': nombre_empresa,
+                empresas.append({
+                    'empresa': nombre_empresa,
                     'tarifas': datos_tarifas
                 })
         
-        return companies
+        return empresas
     except Exception as e:
         print(f"Error al extraer companies de agua: {e}")
         return []
@@ -372,37 +372,37 @@ def extraer_empresas_agua(url: str, timeout: int = 10) -> list[dict[str, Any]]:
 
 def descargar_pdf(url: str, ruta_destino: str, timeout: int = 30) -> bool:
     """
-    Descarga un archivo PDF desde una URL y lo guarda en disco.
+    Download a PDF file from a URL and save it to disk.
     
     Args:
-        url: URL del PDF a descargar
-        ruta_destino: Ruta donde guardar el PDF
-        timeout: Tiempo máximo de espera en segundos
+        url: URL of the PDF to download
+        ruta_destino: Path where to save the PDF
+        timeout: Maximum wait time in seconds
         
     Returns:
-        True si la descarga fue exitosa, False en caso contrario
+        True if the download was successful, False otherwise
     """
     try:
-        # Crear directorios si no existen
+        # Create directories if they don't exist
         ruta = Path(ruta_destino)
         ruta.parent.mkdir(parents=True, exist_ok=True)
         
-        # Descargar el PDF
+        # Download the PDF
         response = requests.get(url, timeout=timeout, allow_redirects=True, stream=True)
         response.raise_for_status()
         
-        # Verificar que el contenido sea PDF
+        # Check that the content is PDF
         content_type = response.headers.get('content-type', '').lower()
         if 'pdf' not in content_type and not url.lower().endswith('.pdf'):
             print(f"Advertencia: El contenido no parece ser un PDF (content-type: {content_type})")
         
-        # Guardar el archivo
+        # Save the file
         with open(ruta, 'wb') as f:
             for chunk in response.iter_content(chunk_size=8192):
                 if chunk:
                     f.write(chunk)
         
-        # Verificar que el archivo se guardó y tiene contenido
+        # Verify that the file was saved and has content
         if ruta.exists() and ruta.stat().st_size > 0:
             return True
         else:
@@ -416,11 +416,11 @@ def descargar_pdf(url: str, ruta_destino: str, timeout: int = 30) -> bool:
 
 def parse_table_structure(table: list[list[Any]]) -> dict[str, Any]:
     """
-    Parses the structure de una table identifying sections y concept-value pairs.
+    Parse the structure of a table identifying sections and concept-value pairs.
     
     Tables can contain:
-    1. Section headers: rows with only 1 column with data o highlighted text
-    2. Pares concept-value: rows with 2 or more columns (concept + value/precio)
+    1. Section headers: rows with only 1 column with data or highlighted text
+    2. Concept-value pairs: rows with 2 or more columns (concept + value/price)
     
     Args:
         table: List of rows, where each row is a list of cells
@@ -428,7 +428,7 @@ def parse_table_structure(table: list[list[Any]]) -> dict[str, Any]:
     Returns:
         Dict with parsed structure:
         {
-            "type": "simple" | "con_secciones",
+            "type": "simple" | "with_sections",
             "sections": [
                 {
                     "section_name": str,
@@ -465,7 +465,7 @@ def parse_table_structure(table: list[list[Any]]) -> dict[str, Any]:
             continue
         
         # Detect if it is a section header
-        # Criteria: only 1 cell with content, o all cells except the first are empty
+        # Criteria: only 1 cell with content, or all cells except the first are empty
         if len(non_empty_cells) == 1:
             # It is a section header
             section_name = non_empty_cells[0]
@@ -480,9 +480,9 @@ def parse_table_structure(table: list[list[Any]]) -> dict[str, Any]:
                 "data": []
             }
         
-        # Detectar si es un par concept-value
+        # Detect if it is a concept-value pair
         elif len(non_empty_cells) >= 2:
-            # It is a concept-value pair (o multiple values)
+            # It is a concept-value pair (or multiple values)
             concept = non_empty_cells[0]
             values = non_empty_cells[1:]
             
@@ -492,7 +492,7 @@ def parse_table_structure(table: list[list[Any]]) -> dict[str, Any]:
             )
             
             if es_dato_valor or len(values) == 1:
-                # It is a concept-value pair válido
+                # It is a valid concept-value pair
                 par_datos: dict[str, Any] = {
                     "concept": concept,
                     "value": values[0] if len(values) == 1 else values,
@@ -523,7 +523,7 @@ def parse_table_structure(table: list[list[Any]]) -> dict[str, Any]:
         sections.append(current_section)
     
     return {
-        "type": "con_secciones" if sections else "simple",
+        "type": "with_sections" if sections else "simple",
         "sections": sections,
         "direct_data": direct_data,
         "total_rows": len(table),
@@ -533,7 +533,7 @@ def parse_table_structure(table: list[list[Any]]) -> dict[str, Any]:
 
 def _contains_number_or_price(text: str) -> bool:
     """
-    Detects if a text contains numbers, prices or values.
+    Check if a text contains numbers, prices or values.
     
     Args:
         text: Text to analyze
@@ -545,8 +545,8 @@ def _contains_number_or_price(text: str) -> bool:
     patterns = [
         r'\d+',  # Numbers
         r'\$\s*\d+',  # Price with $
-        r'\d+\s*,\s*\d+',  # Numbers con comas (miles)
-        r'\d+\.\d+',  # Numbers decimales
+        r'\d+\s*,\s*\d+',  # Numbers with commas (thousands)
+        r'\d+\.\d+',  # Decimal numbers
         r'\d+\s*%',  # Percentages
         r'\d+\s*(m3|m²|km|kg|lt|uf)',  # Units of measure
         r'(SI|NO|si|no)',  # Boolean values
@@ -609,20 +609,20 @@ def extract_pdf_tables(pdf_path: str) -> Optional[dict[str, Any]]:
         
     Returns:
         Dict with text and extracted tables, or None if error.
-        Estructura:
+        Structure:
         {
-            "text": "text completo del PDF",
+            "texto": "complete text from PDF",
             "tables": [
                 {
                     "page": 1,
-                    "tabla_numero": 1,
-                    "rows": [[cell1, cell2, ...], ...],
-                    "texto_formateado": "representación en text"
+                    "table_number": 1,
+                    "filas": [[cell1, cell2, ...], ...],
+                    "texto_formateado": "text representation"
                 },
                 ...
             ],
-            "total_pages": N,
-            "total_tables": M
+            "total_paginas": N,
+            "total_tablas": M
         }
     """
     try:
@@ -644,18 +644,18 @@ def extract_pdf_tables(pdf_path: str) -> Optional[dict[str, Any]]:
             result["total_pages"] = len(pdf.pages)
             
             for page_num, page in enumerate(pdf.pages, 1):
-                # Extraer text de la página
+                # Extract text from page
                 page_text = page.extract_text()
                 if page_text:
                     result["text"] += f"\n--- Página {page_num} ---\n"
                     result["text"] += page_text + "\n"
                 
-                # Extraer tables de la página
+                # Extract tables from page
                 tablas_pagina = page.extract_tables()
                 
                 for table_num, table in enumerate(tablas_pagina, 1):
                     if table:
-                        # Parsear structure de table
+                        # Parse table structure
                         structure = parse_table_structure(table)
                         
                         # Format table as text
@@ -718,7 +718,7 @@ def extract_pdf_text_with_ocr(pdf_path: str) -> Optional[str]:
         # Convert PDF to images
         images = convert_from_path(str(ruta))
         
-        # Aplicar OCR a cada página
+        # Apply OCR to each page
         full_text = ""
         for i, image in enumerate(images, 1):
             page_text = pytesseract.image_to_string(image, lang='spa')
@@ -739,11 +739,11 @@ def extract_pdf_text_with_ocr(pdf_path: str) -> Optional[str]:
 
 def get_pdfs_in_folder(folder_path: str, recursive: bool = True) -> list[str]:
     """
-    Gets the list of PDF files in a folder.
+    Get the list of PDF files in a folder.
     
     Args:
         folder_path: Path to the folder
-        recursive: Si es True, busca en subcarpetas
+        recursive: If True, searches in subfolders
         
     Returns:
         List with complete paths of found PDF files
@@ -768,27 +768,27 @@ def get_pdfs_in_folder(folder_path: str, recursive: bool = True) -> list[str]:
 
 def organize_hierarchical_analysis(analyzed_pdfs: list[dict[str, Any]]) -> dict[str, Any]:
     """
-    Organizes PDF analyses in a hierarchical structure by company and locality.
+    Organize PDF analyses in a hierarchical structure by company and locality.
     
-    Estructura resultante:
+    Resulting structure:
     {
-        "companies": {
+        "empresas": {
             "Aguas_Andinas": {
-                "company_name": "Aguas Andinas",
-                "localities": {
+                "nombre_empresa": "Aguas Andinas",
+                "localidades": {
                     "Santiago": {
-                        "locality_name": "Santiago",
-                        "pdf_file": "Santiago.pdf",
-                        "analysis": {...}
+                        "nombre_localidad": "Santiago",
+                        "archivo_pdf": "Santiago.pdf",
+                        "analisis": {...}
                     },
                     "Maipu": {...}
                 }
             },
             "Essbio": {...}
         },
-        "summary": {
-            "total_companies": N,
-            "total_localities": M,
+        "resumen": {
+            "total_empresas": N,
+            "total_localidades": M,
             "total_pdfs": K
         }
     }
@@ -873,12 +873,12 @@ def get_new_pdfs(
     recursive: bool = True
 ) -> list[str]:
     """
-    Gets the list of new PDFs that have not been analyzed.
+    Get the list of new PDFs that have not been analyzed.
     
     Args:
-        folder_path: Path to the folder con PDFs
-        registry_path: Ruta al archivo JSON con registry de PDFs analizados
-        recursive: Si es True, busca en subcarpetas
+        folder_path: Path to the folder with PDFs
+        registry_path: Path to the JSON file with registry of analyzed PDFs
+        recursive: If True, searches in subfolders
         
     Returns:
         List with paths of new PDFs (not analyzed)
@@ -887,10 +887,10 @@ def get_new_pdfs(
         # Get all PDFs in folder
         all_pdfs = get_pdfs_in_folder(folder_path, recursive)
         
-        # Cargar registry de PDFs analizados
+        # Load registry of analyzed PDFs
         registry = cargar_json(registry_path)
         
-        # Si no hay registry, todos son nuevos
+        # If there's no registry, all are new
         if not registry:
             return all_pdfs
         
