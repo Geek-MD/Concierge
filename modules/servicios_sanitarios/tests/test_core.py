@@ -7,17 +7,17 @@ from datetime import datetime
 import sys
 import os
 
-# Agregar el directorio raíz al path para importar el módulo
+# Add root directory to path to import the module
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 from modules.servicios_sanitarios.src.core import ServiciosSanitarios
 
 
 class TestServiciosSanitarios:
-    """Tests para la clase ServiciosSanitarios."""
+    """Tests for the ServiciosSanitarios class."""
     
     def test_inicializacion(self):
-        """Test: El módulo se inicializa correctamente."""
+        """Test: The module initializes correctly."""
         servicio = ServiciosSanitarios()
         
         assert servicio.nombre == "ServiciosSanitarios"
@@ -27,14 +27,14 @@ class TestServiciosSanitarios:
         assert servicio.esta_activo() is True
     
     def test_inicializacion_con_nombre(self):
-        """Test: El módulo se puede inicializar con un nombre personalizado."""
+        """Test: The module can be initialized with a custom name."""
         nombre_custom = "MiServicio"
         servicio = ServiciosSanitarios(nombre=nombre_custom)
         
         assert servicio.nombre == nombre_custom
     
     def test_agregar_tarea_basica(self):
-        """Test: Se puede agregar una tarea básica."""
+        """Test: A basic task can be added."""
         servicio = ServiciosSanitarios()
         tarea = servicio.agregar_tarea("Limpiar área común")
         
@@ -45,7 +45,7 @@ class TestServiciosSanitarios:
         assert len(servicio.tareas) == 1
     
     def test_agregar_tarea_con_prioridad(self):
-        """Test: Se puede agregar una tarea con prioridad específica."""
+        """Test: A task can be added with specific priority."""
         servicio = ServiciosSanitarios()
         tarea = servicio.agregar_tarea("Emergencia sanitaria", prioridad="critica")
         
@@ -59,7 +59,7 @@ class TestServiciosSanitarios:
             servicio.agregar_tarea("Tarea", prioridad="urgentisima")
     
     def test_agregar_tarea_con_metadata(self):
-        """Test: Se puede agregar metadata a una tarea."""
+        """Test: Metadata can be added to a task."""
         servicio = ServiciosSanitarios()
         metadata = {"ubicacion": "Piso 3", "responsable": "Juan"}
         tarea = servicio.agregar_tarea("Revisar sanitarios", metadata=metadata)
@@ -67,7 +67,7 @@ class TestServiciosSanitarios:
         assert tarea["metadata"] == metadata
     
     def test_listar_tareas(self):
-        """Test: Se pueden listar todas las tareas."""
+        """Test: All tasks can be listed."""
         servicio = ServiciosSanitarios()
         servicio.agregar_tarea("Tarea 1")
         servicio.agregar_tarea("Tarea 2")
@@ -77,7 +77,7 @@ class TestServiciosSanitarios:
         assert len(tareas) == 3
     
     def test_listar_tareas_por_estado(self):
-        """Test: Se pueden filtrar tareas por estado."""
+        """Test: Tasks can be filtered by state."""
         servicio = ServiciosSanitarios()
         tarea1 = servicio.agregar_tarea("Tarea 1")
         servicio.agregar_tarea("Tarea 2")
@@ -90,7 +90,7 @@ class TestServiciosSanitarios:
         assert len(completadas) == 1
     
     def test_listar_tareas_por_prioridad(self):
-        """Test: Se pueden filtrar tareas por prioridad."""
+        """Test: Tasks can be filtered by priority."""
         servicio = ServiciosSanitarios()
         servicio.agregar_tarea("Tarea baja", prioridad="baja")
         servicio.agregar_tarea("Tarea alta", prioridad="alta")
@@ -103,7 +103,7 @@ class TestServiciosSanitarios:
         assert len(bajas) == 1
     
     def test_completar_tarea(self):
-        """Test: Se puede completar una tarea."""
+        """Test: A task can be completed."""
         servicio = ServiciosSanitarios()
         tarea = servicio.agregar_tarea("Tarea a completar")
         
@@ -122,7 +122,7 @@ class TestServiciosSanitarios:
         assert resultado is False
     
     def test_obtener_estadisticas(self):
-        """Test: Se pueden obtener estadísticas del módulo."""
+        """Test: Module statistics can be obtained."""
         servicio = ServiciosSanitarios()
         servicio.agregar_tarea("Tarea 1", prioridad="alta")
         servicio.agregar_tarea("Tarea 2", prioridad="baja")
@@ -139,7 +139,7 @@ class TestServiciosSanitarios:
         assert stats["modulo_activo"] is True
     
     def test_obtener_info(self):
-        """Test: Se puede obtener información del módulo."""
+        """Test: Module information can be obtained."""
         servicio = ServiciosSanitarios(nombre="TestServicio")
         servicio.agregar_tarea("Tarea 1")
         
@@ -151,7 +151,7 @@ class TestServiciosSanitarios:
         assert info["total_tareas"] == 1
     
     def test_activar_desactivar(self):
-        """Test: Se puede activar y desactivar el módulo."""
+        """Test: The module can be activated and deactivated."""
         servicio = ServiciosSanitarios()
         
         assert servicio.esta_activo() is True

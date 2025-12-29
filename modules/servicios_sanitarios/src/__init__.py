@@ -1,10 +1,10 @@
 """
 Concierge - Servicios Sanitarios Module
 
-Este módulo forma parte del sistema Concierge y proporciona funcionalidades
-para la gestión y automatización de servicios sanitarios.
+This module is part of the Concierge system and provides functionalities
+for the management and automation of sanitary services.
 
-Versión: 0.1.0 (Proof of Concept)
+Version: 0.1.0 (Proof of Concept)
 """
 
 __version__ = "0.1.0"
