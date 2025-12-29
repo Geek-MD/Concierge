@@ -20,6 +20,10 @@ from pathlib import Path
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from modules.servicios_sanitarios.src import ServiciosSanitarios
+from modules.servicios_sanitarios.src.logger import get_logger
+
+# Initialize logger
+logger = get_logger('concierge.runner')
 
 
 def print_header(titulo: str) -> None:
@@ -70,24 +74,30 @@ def create_directories() -> None:
 
 def main():
     """Main function of the script."""
+    logger.info("="*60)
+    logger.info("Starting Concierge Water Tariff Monitoring Service")
+    logger.info("="*60)
+    
     print_header("CONCIERGE - Servicio de Monitoreo de Tarifas Sanitarias")
     
     print("Iniciando servicio...")
     print_info("Este script ejecutará el flujo completo y terminará al finalizar", 0)
     print_info("No quedará como daemon ni proceso en background", 0)
     
-    # Crear directorios necesarios
-    crear_directorios()
+    # Create necessary directories
+    create_directories()
+    logger.info("Created necessary directories")
     
-    # Crear instancia del servicio
+    # Create service instance
     print_section(1, "Inicializando Módulo")
     servicio = ServiciosSanitarios(nombre="Concierge Runner")
     print_success(f"Módulo creado: {servicio.nombre}")
     print_info(f"ID: {servicio.id}")
     
     # ============================================================================
-    # PASO 1: Verificar SISS
+    # STEP 1: Verify SISS
     # ============================================================================
+    logger.info("Step 1: Verifying SISS")
     print_section(2, "Verificando URL de SISS")
     print_info("Accediendo a https://www.siss.gob.cl...")
     print_info("Detectando redirecciones...")

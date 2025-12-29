@@ -8,6 +8,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
 
+from .logger import get_logger
 from .utils import (
     cargar_json,
     descargar_pdf,
@@ -46,6 +47,9 @@ class ServiciosSanitarios:
         self.fecha_creacion = datetime.now()
         self.tareas: list[dict[str, Any]] = []
         self._activo = True
+        self.logger = get_logger('concierge.servicios_sanitarios')
+        
+        self.logger.info(f"Initialized module: {nombre} (ID: {self.id})")
         
     def agregar_tarea(self, 
                       descripcion: str, 
@@ -198,6 +202,7 @@ class ServiciosSanitarios:
         Returns:
             dict[str, Any] with result information (url, timestamp, saved, changes)
         """
+        self.logger.info("Starting SISS verification")
         url_siss = "https://www.siss.gob.cl"
         timestamp = datetime.now()
         
@@ -205,6 +210,7 @@ class ServiciosSanitarios:
         url_final = verificar_redireccion_url(url_siss)
         
         if url_final is None:
+            self.logger.error("Failed to get SISS redirection URL")
             return {
                 "success": False,
                 "url_original": url_siss,
@@ -263,7 +269,15 @@ class ServiciosSanitarios:
             
             # Save to JSON
             guardado = guardar_json(datos, ruta_salida)
+            if guardado:
+                if is_first_time:
+                    self.logger.info(f"First SISS verification saved to {ruta_salida}")
+                else:
+                    self.logger.info(f"SISS changes detected and saved to {ruta_salida}")
+        else:
+            self.logger.debug("No changes detected in SISS URLs")
         
+        self.logger.info(f"SISS verification completed: {url_final}")
         return {
             "success": True,
             "url_original": url_siss,
@@ -454,6 +468,7 @@ class ServiciosSanitarios:
             - timestamp: Moment of the operation
             - message: Description of the result
         """
+        self.logger.info("Starting PDF downloads")
         timestamp = datetime.now()
         
         # Load URL data from JSON
@@ -611,6 +626,7 @@ class ServiciosSanitarios:
             - timestamp: Moment of the operation
             - message: Description of the result
         """
+        self.logger.info("Starting PDF analysis")
         timestamp = datetime.now()
         
         # Get list of PDFs to analyze
