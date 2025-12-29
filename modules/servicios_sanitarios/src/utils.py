@@ -13,6 +13,11 @@ from urllib.parse import urljoin
 import requests
 from bs4 import BeautifulSoup
 
+from .logger import get_logger
+
+# Initialize logger for utilities
+logger = get_logger('concierge.servicios_sanitarios.utils')
+
 
 def generate_id() -> str:
     """
@@ -107,10 +112,23 @@ def verificar_redireccion_url(url: str, timeout: int = 10) -> Optional[str]:
         String with the final URL after redirections, or None if there's an error
     """
     try:
+        logger.debug(f"Checking redirection for URL: {url}")
         response = requests.get(url, timeout=timeout, allow_redirects=True)
-        return response.url
+        response.raise_for_status()
+        final_url = response.url
+        logger.debug(f"Redirection check successful: {url} -> {final_url}")
+        return final_url
+    except requests.exceptions.Timeout as e:
+        logger.error(f"Timeout error when checking redirection for {url}: {e}")
+        return None
+    except requests.exceptions.ConnectionError as e:
+        logger.error(f"Connection error when checking redirection for {url}: {e}")
+        return None
+    except requests.exceptions.HTTPError as e:
+        logger.error(f"HTTP error when checking redirection for {url}: {e}")
+        return None
     except Exception as e:
-        print(f"Error al verificar redirección: {e}")
+        logger.error(f"Unexpected error when checking redirection for {url}: {e}", exc_info=True)
         return None
 
 
@@ -131,9 +149,10 @@ def guardar_json(data: dict[str, Any], ruta_archivo: str) -> bool:
         
         with open(ruta, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
+        logger.debug(f"Successfully saved JSON to {ruta_archivo}")
         return True
     except Exception as e:
-        print(f"Error al guardar JSON: {e}")
+        logger.error(f"Error saving JSON to {ruta_archivo}: {e}", exc_info=True)
         return False
 
 
@@ -149,9 +168,17 @@ def cargar_json(ruta_archivo: str) -> Optional[dict[str, Any]]:
     """
     try:
         with open(ruta_archivo, 'r', encoding='utf-8') as f:
-            return json.load(f)
+            data = json.load(f)
+        logger.debug(f"Successfully loaded JSON from {ruta_archivo}")
+        return data
+    except FileNotFoundError:
+        logger.debug(f"JSON file not found: {ruta_archivo}")
+        return None
+    except json.JSONDecodeError as e:
+        logger.error(f"Error decoding JSON from {ruta_archivo}: {e}")
+        return None
     except Exception as e:
-        print(f"Error al cargar JSON: {e}")
+        logger.error(f"Error loading JSON from {ruta_archivo}: {e}", exc_info=True)
         return None
 
 
@@ -168,6 +195,7 @@ def extraer_url_por_texto(url: str, texto_buscar: str, timeout: int = 10) -> Opt
         String with the absolute URL of the found link, or None if not found
     """
     try:
+        logger.debug(f"Extracting URL by text '{texto_buscar}' from {url}")
         response = requests.get(url, timeout=timeout, allow_redirects=True)
         response.raise_for_status()
         
@@ -181,11 +209,22 @@ def extraer_url_por_texto(url: str, texto_buscar: str, timeout: int = 10) -> Opt
             href = link.get('href')
             if href and isinstance(href, str):
                 url_absoluta = urljoin(url, href)
+                logger.debug(f"Found link for '{texto_buscar}': {url_absoluta}")
                 return url_absoluta
         
+        logger.warning(f"Link with text '{texto_buscar}' not found on page {url}")
+        return None
+    except requests.exceptions.Timeout as e:
+        logger.error(f"Timeout error when extracting URL by text from {url}: {e}")
+        return None
+    except requests.exceptions.ConnectionError as e:
+        logger.error(f"Connection error when extracting URL by text from {url}: {e}")
+        return None
+    except requests.exceptions.HTTPError as e:
+        logger.error(f"HTTP error when extracting URL by text from {url}: {e}")
         return None
     except Exception as e:
-        print(f"Error al extraer URL por text: {e}")
+        logger.error(f"Unexpected error when extracting URL by text from {url}: {e}", exc_info=True)
         return None
 
 
@@ -365,8 +404,17 @@ def extraer_empresas_agua(url: str, timeout: int = 10) -> list[dict[str, Any]]:
                 })
         
         return empresas
+    except requests.exceptions.Timeout as e:
+        logger.error(f"Timeout error when extracting water companies from {url}: {e}")
+        return []
+    except requests.exceptions.ConnectionError as e:
+        logger.error(f"Connection error when extracting water companies from {url}: {e}")
+        return []
+    except requests.exceptions.HTTPError as e:
+        logger.error(f"HTTP error when extracting water companies from {url}: {e}")
+        return []
     except Exception as e:
-        print(f"Error al extraer companies de agua: {e}")
+        logger.error(f"Unexpected error when extracting water companies from {url}: {e}", exc_info=True)
         return []
 
 
@@ -387,6 +435,8 @@ def descargar_pdf(url: str, ruta_destino: str, timeout: int = 30) -> bool:
         ruta = Path(ruta_destino)
         ruta.parent.mkdir(parents=True, exist_ok=True)
         
+        logger.debug(f"Downloading PDF from {url} to {ruta_destino}")
+        
         # Download the PDF
         response = requests.get(url, timeout=timeout, allow_redirects=True, stream=True)
         response.raise_for_status()
@@ -394,7 +444,7 @@ def descargar_pdf(url: str, ruta_destino: str, timeout: int = 30) -> bool:
         # Check that the content is PDF
         content_type = response.headers.get('content-type', '').lower()
         if 'pdf' not in content_type and not url.lower().endswith('.pdf'):
-            print(f"Advertencia: El contenido no parece ser un PDF (content-type: {content_type})")
+            logger.warning(f"Content may not be a PDF (content-type: {content_type}) for URL: {url}")
         
         # Save the file
         with open(ruta, 'wb') as f:
@@ -404,13 +454,23 @@ def descargar_pdf(url: str, ruta_destino: str, timeout: int = 30) -> bool:
         
         # Verify that the file was saved and has content
         if ruta.exists() and ruta.stat().st_size > 0:
+            logger.debug(f"Successfully downloaded PDF to {ruta_destino} ({ruta.stat().st_size} bytes)")
             return True
         else:
-            print("Error: El archivo descargado está vacío o no existe")
+            logger.error(f"Downloaded file is empty or does not exist: {ruta_destino}")
             return False
             
+    except requests.exceptions.Timeout as e:
+        logger.error(f"Timeout error when downloading PDF from {url}: {e}")
+        return False
+    except requests.exceptions.ConnectionError as e:
+        logger.error(f"Connection error when downloading PDF from {url}: {e}")
+        return False
+    except requests.exceptions.HTTPError as e:
+        logger.error(f"HTTP error when downloading PDF from {url}: {e}")
+        return False
     except Exception as e:
-        print(f"Error al descargar PDF desde {url}: {e}")
+        logger.error(f"Unexpected error when downloading PDF from {url}: {e}", exc_info=True)
         return False
 
 
