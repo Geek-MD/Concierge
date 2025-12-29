@@ -10,20 +10,20 @@ from typing import Any, Optional
 
 from .logger import get_logger
 from .utils import (
-    cargar_json,
-    descargar_pdf,
-    extraer_empresas_agua,
+    load_json,
+    download_pdf,
+    extract_water_companies,
     extract_pdf_tables,
     extract_pdf_text,
     extract_pdf_text_with_ocr,
-    extraer_url_por_texto,
+    extract_url_by_text,
     format_timestamp,
     generate_id,
-    guardar_json,
+    save_json,
     get_pdfs_in_folder,
     get_new_pdfs,
     organize_hierarchical_analysis,
-    verificar_redireccion_url,
+    check_url_redirection,
 )
 
 
@@ -207,7 +207,7 @@ class ServiciosSanitarios:
         timestamp = datetime.now()
         
         # Check redirection
-        url_final = verificar_redireccion_url(url_siss)
+        url_final = check_url_redirection(url_siss)
         
         if url_final is None:
             self.logger.error("Failed to get SISS redirection URL")
@@ -221,10 +221,10 @@ class ServiciosSanitarios:
             }
         
         # Extract URL of "Tarifas vigentes"
-        url_tarifas = extraer_url_por_texto(url_final, "Tarifas vigentes")
+        url_tarifas = extract_url_by_text(url_final, "Tarifas vigentes")
         
         # Load previous data if they exist
-        datos_previos = cargar_json(ruta_salida)
+        datos_previos = load_json(ruta_salida)
         
         # Check if there are changes
         is_first_time = datos_previos is None
@@ -268,7 +268,7 @@ class ServiciosSanitarios:
             }
             
             # Save to JSON
-            guardado = guardar_json(datos, ruta_salida)
+            guardado = save_json(datos, ruta_salida)
             if guardado:
                 if is_first_time:
                     self.logger.info(f"First SISS verification saved to {ruta_salida}")
@@ -352,7 +352,7 @@ class ServiciosSanitarios:
                 }
         
         # Extract water companies data
-        empresas = extraer_empresas_agua(url_tarifas)
+        empresas = extract_water_companies(url_tarifas)
         
         if not empresas:
             return {
@@ -364,7 +364,7 @@ class ServiciosSanitarios:
             }
         
         # Load previous data if they exist
-        datos_previos = cargar_json(ruta_salida)
+        datos_previos = load_json(ruta_salida)
         
         # Check if there are changes
         is_first_time = datos_previos is None
@@ -416,7 +416,7 @@ class ServiciosSanitarios:
             }
             
             # Save to JSON
-            guardado = guardar_json(datos, ruta_salida)
+            guardado = save_json(datos, ruta_salida)
         
         return {
             "success": True,
@@ -435,7 +435,7 @@ class ServiciosSanitarios:
             )
         }
     
-    def descargar_pdfs(
+    def download_pdfs(
         self,
         ruta_json: str = "data/tarifas_empresas.json",
         pdfs_path: str = "data/pdfs",
@@ -472,7 +472,7 @@ class ServiciosSanitarios:
         timestamp = datetime.now()
         
         # Load URL data from JSON
-        datos_urls = cargar_json(ruta_json)
+        datos_urls = load_json(ruta_json)
         if not datos_urls:
             return {
                 "success": False,
@@ -490,7 +490,7 @@ class ServiciosSanitarios:
             }
         
         # Load previous download registry
-        registro_previo = cargar_json(registry_path)
+        registro_previo = load_json(registry_path)
         is_first_time = registro_previo is None
         
         # Get already downloaded PDFs (if they exist)
@@ -524,7 +524,7 @@ class ServiciosSanitarios:
                 ruta_pdf = Path(pdfs_path) / empresa_dir / f"{localidad_file}.pdf"
                 
                 # Try to download
-                if descargar_pdf(url_pdf, str(ruta_pdf)):
+                if download_pdf(url_pdf, str(ruta_pdf)):
                     pdfs_descargados.append({
                         "empresa": empresa,
                         "localidad": localidad,
@@ -569,7 +569,7 @@ class ServiciosSanitarios:
             }]
         }
         
-        guardado = guardar_json(registro, registry_path)
+        guardado = save_json(registro, registry_path)
         
         return {
             "success": True,
@@ -649,7 +649,7 @@ class ServiciosSanitarios:
             }
         
         # Load previous registry
-        registro_previo = cargar_json(registry_path)
+        registro_previo = load_json(registry_path)
         is_first_time = registro_previo is None
         
         # Process analysis
@@ -826,7 +826,7 @@ class ServiciosSanitarios:
             "analyzed_pdfs": total_analyzed_pdfs
         }
         
-        guardado = guardar_json(registro, registry_path)
+        guardado = save_json(registro, registry_path)
         
         return {
             "success": True,
