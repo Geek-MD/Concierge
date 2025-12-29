@@ -13,47 +13,47 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 
 from modules.servicios_sanitarios.src.core import ServiciosSanitarios
 from modules.servicios_sanitarios.src.utils import (
-    extraer_nombre_empresa,
-    extraer_datos_tabla_tarifas,
-    extraer_empresas_agua
+    extract_company_name,
+    extract_tariff_table_data,
+    extract_water_companies
 )
 
 
 class TestExtraerNombreEmpresa:
-    """Tests para la función extraer_nombre_empresa."""
+    """Tests para la función extract_company_name."""
     
     def test_extraer_nombre_con_guion(self):
         """Test: Extrae correctamente el nombre antes del guión."""
         texto = "Aguas Andinas - Tarifas vigentes"
-        resultado = extraer_nombre_empresa(texto)
+        resultado = extract_company_name(texto)
         assert resultado == "Aguas Andinas"
     
     def test_extraer_nombre_sin_guion(self):
         """Test: Devuelve el texto completo si no hay guión."""
         texto = "Aguas Andinas"
-        resultado = extraer_nombre_empresa(texto)
+        resultado = extract_company_name(texto)
         assert resultado == "Aguas Andinas"
     
     def test_extraer_nombre_vacio(self):
         """Test: Retorna None para texto vacío."""
-        assert extraer_nombre_empresa("") is None
-        assert extraer_nombre_empresa(None) is None
+        assert extract_company_name("") is None
+        assert extract_company_name(None) is None
     
     def test_extraer_nombre_con_espacios(self):
         """Test: Maneja correctamente espacios adicionales."""
         texto = "  Aguas Andinas  -  Tarifas vigentes  "
-        resultado = extraer_nombre_empresa(texto)
+        resultado = extract_company_name(texto)
         assert resultado == "Aguas Andinas"
     
     def test_extraer_nombre_multiples_guiones(self):
         """Test: Usa solo el primer guión."""
         texto = "Aguas Andinas - Tarifas vigentes - Región Metropolitana"
-        resultado = extraer_nombre_empresa(texto)
+        resultado = extract_company_name(texto)
         assert resultado == "Aguas Andinas"
 
 
 class TestExtraerDatosTablaTarifas:
-    """Tests para la función extraer_datos_tabla_tarifas."""
+    """Tests para la función extract_tariff_table_data."""
     
     def test_extraer_datos_tabla_simple(self):
         """Test: Extrae datos de una tabla HTML simple."""
@@ -75,7 +75,7 @@ class TestExtraerDatosTablaTarifas:
         """
         base_url = "https://www.siss.gob.cl"
         
-        resultado = extraer_datos_tabla_tarifas(html, base_url)
+        resultado = extract_tariff_table_data(html, base_url)
         
         assert len(resultado) == 2
         assert resultado[0]["localidad"] == "Santiago"
@@ -99,7 +99,7 @@ class TestExtraerDatosTablaTarifas:
         """
         base_url = "https://www.siss.gob.cl"
         
-        resultado = extraer_datos_tabla_tarifas(html, base_url)
+        resultado = extract_tariff_table_data(html, base_url)
         
         assert len(resultado) == 1
         assert resultado[0]["url_pdf"] == "https://ejemplo.com/tarifa.pdf"
@@ -120,7 +120,7 @@ class TestExtraerDatosTablaTarifas:
         """
         base_url = "https://www.siss.gob.cl"
         
-        resultado = extraer_datos_tabla_tarifas(html, base_url)
+        resultado = extract_tariff_table_data(html, base_url)
         
         assert len(resultado) == 0
     
@@ -148,7 +148,7 @@ class TestExtraerDatosTablaTarifas:
         """
         base_url = "https://www.siss.gob.cl"
         
-        resultado = extraer_datos_tabla_tarifas(html, base_url)
+        resultado = extract_tariff_table_data(html, base_url)
         
         # Solo debe retornar la primera fila válida
         assert len(resultado) == 1
@@ -174,14 +174,14 @@ class TestExtraerDatosTablaTarifas:
         """
         base_url = "https://www.siss.gob.cl"
         
-        resultado = extraer_datos_tabla_tarifas(html, base_url)
+        resultado = extract_tariff_table_data(html, base_url)
         
         assert len(resultado) == 1
         assert resultado[0]["localidad"] == "Santiago"
 
 
 class TestExtraerEmpresasAgua:
-    """Tests para la función extraer_empresas_agua."""
+    """Tests para la función extract_water_companies."""
     
     @patch('modules.servicios_sanitarios.src.utils.requests.get')
     def test_extraer_empresas_exitoso(self, mock_get):
@@ -220,7 +220,7 @@ class TestExtraerEmpresasAgua:
         mock_response.url = "https://www.siss.gob.cl/tarifas"
         mock_get.return_value = mock_response
         
-        resultado = extraer_empresas_agua("https://www.siss.gob.cl/tarifas")
+        resultado = extract_water_companies("https://www.siss.gob.cl/tarifas")
         
         assert len(resultado) == 2
         assert resultado[0]["empresa"] == "Aguas Andinas"
@@ -245,7 +245,7 @@ class TestExtraerEmpresasAgua:
         mock_response.url = "https://www.siss.gob.cl/tarifas"
         mock_get.return_value = mock_response
         
-        resultado = extraer_empresas_agua("https://www.siss.gob.cl/tarifas")
+        resultado = extract_water_companies("https://www.siss.gob.cl/tarifas")
         
         assert len(resultado) == 0
     
@@ -254,7 +254,7 @@ class TestExtraerEmpresasAgua:
         """Test: Manejo de error de conexion."""
         mock_get.side_effect = Exception("Error de conexion")
         
-        resultado = extraer_empresas_agua("https://www.siss.gob.cl/tarifas")
+        resultado = extract_water_companies("https://www.siss.gob.cl/tarifas")
         
         assert resultado == []
     
@@ -295,7 +295,7 @@ class TestExtraerEmpresasAgua:
         mock_response.url = "https://www.siss.gob.cl/tarifas"
         mock_get.return_value = mock_response
         
-        resultado = extraer_empresas_agua("https://www.siss.gob.cl/tarifas")
+        resultado = extract_water_companies("https://www.siss.gob.cl/tarifas")
         
         assert len(resultado) == 2
 
@@ -303,9 +303,9 @@ class TestExtraerEmpresasAgua:
 class TestMonitorearTarifasVigentes:
     """Tests para el método monitorear_tarifas_vigentes."""
     
-    @patch('modules.servicios_sanitarios.src.utils.cargar_json')
-    @patch('modules.servicios_sanitarios.src.core.extraer_empresas_agua')
-    @patch('modules.servicios_sanitarios.src.core.guardar_json')
+    @patch('modules.servicios_sanitarios.src.utils.load_json')
+    @patch('modules.servicios_sanitarios.src.core.extract_water_companies')
+    @patch('modules.servicios_sanitarios.src.core.save_json')
     def test_monitorear_primera_vez(self, mock_guardar, mock_extraer, mock_cargar, tmp_path):
         """Test: Primera vez guarda correctamente."""
         # Configurar mocks
@@ -328,16 +328,16 @@ class TestMonitorearTarifasVigentes:
             ruta_salida=archivo_salida
         )
         
-        assert resultado["exito"] is True
+        assert resultado["success"] is True
         assert resultado["guardado"] is True
-        assert resultado["es_primera_vez"] is True
-        assert resultado["total_empresas"] == 1
-        assert resultado["mensaje"] == "Primera verificación guardada"
+        assert resultado["is_first_time"] is True
+        assert resultado["total_companies"] == 1
+        assert resultado["message"] == "Primera verificación guardada"
         assert len(resultado["empresas"]) == 1
     
-    @patch('modules.servicios_sanitarios.src.core.cargar_json')
-    @patch('modules.servicios_sanitarios.src.core.extraer_empresas_agua')
-    @patch('modules.servicios_sanitarios.src.core.guardar_json')
+    @patch('modules.servicios_sanitarios.src.core.load_json')
+    @patch('modules.servicios_sanitarios.src.core.extract_water_companies')
+    @patch('modules.servicios_sanitarios.src.core.save_json')
     def test_monitorear_sin_cambios(self, mock_guardar, mock_extraer, mock_cargar):
         """Test: Sin cambios no guarda de nuevo."""
         empresas_data = [
@@ -364,16 +364,16 @@ class TestMonitorearTarifasVigentes:
             url_tarifas="https://www.siss.gob.cl/tarifas"
         )
         
-        assert resultado["exito"] is True
+        assert resultado["success"] is True
         assert resultado["guardado"] is False
-        assert resultado["es_primera_vez"] is False
+        assert resultado["is_first_time"] is False
         assert resultado["cambios_detectados"] is False
-        assert resultado["mensaje"] == "Sin cambios, no se guardó"
+        assert resultado["message"] == "Sin cambios, no se guardó"
         mock_guardar.assert_not_called()
     
-    @patch('modules.servicios_sanitarios.src.core.cargar_json')
-    @patch('modules.servicios_sanitarios.src.core.extraer_empresas_agua')
-    @patch('modules.servicios_sanitarios.src.core.guardar_json')
+    @patch('modules.servicios_sanitarios.src.core.load_json')
+    @patch('modules.servicios_sanitarios.src.core.extract_water_companies')
+    @patch('modules.servicios_sanitarios.src.core.save_json')
     def test_monitorear_con_cambios(self, mock_guardar, mock_extraer, mock_cargar):
         """Test: Cambios detectados se guardan con historial."""
         # Configurar mocks
@@ -409,11 +409,11 @@ class TestMonitorearTarifasVigentes:
             url_tarifas="https://www.siss.gob.cl/tarifas"
         )
         
-        assert resultado["exito"] is True
+        assert resultado["success"] is True
         assert resultado["guardado"] is True
-        assert resultado["es_primera_vez"] is False
+        assert resultado["is_first_time"] is False
         assert resultado["cambios_detectados"] is True
-        assert resultado["mensaje"] == "Cambios detectados y guardados"
+        assert resultado["message"] == "Cambios detectados y guardados"
         
         # Verificar que se guardó con historial
         assert mock_guardar.called
@@ -421,7 +421,7 @@ class TestMonitorearTarifasVigentes:
         assert "historial" in datos_guardados
         assert len(datos_guardados["historial"]) == 1
     
-    @patch('modules.servicios_sanitarios.src.core.extraer_empresas_agua')
+    @patch('modules.servicios_sanitarios.src.core.extract_water_companies')
     def test_monitorear_sin_empresas(self, mock_extraer):
         """Test: Manejo cuando no se extraen empresas."""
         mock_extraer.return_value = []
@@ -431,21 +431,21 @@ class TestMonitorearTarifasVigentes:
             url_tarifas="https://www.siss.gob.cl/tarifas"
         )
         
-        assert resultado["exito"] is False
+        assert resultado["success"] is False
         assert "error" in resultado
         assert resultado["empresas"] == []
     
     @patch('modules.servicios_sanitarios.src.core.ServiciosSanitarios.verificar_siss')
-    @patch('modules.servicios_sanitarios.src.core.extraer_empresas_agua')
-    @patch('modules.servicios_sanitarios.src.utils.cargar_json')
-    @patch('modules.servicios_sanitarios.src.core.guardar_json')
+    @patch('modules.servicios_sanitarios.src.core.extract_water_companies')
+    @patch('modules.servicios_sanitarios.src.utils.load_json')
+    @patch('modules.servicios_sanitarios.src.core.save_json')
     def test_monitorear_sin_url_usa_verificar_siss(
         self, mock_guardar, mock_cargar, mock_extraer, mock_verificar
     ):
         """Test: Si no se provee URL, la obtiene con verificar_siss."""
         # Configurar mocks
         mock_verificar.return_value = {
-            "exito": True,
+            "success": True,
             "url_tarifas_vigentes": "https://www.siss.gob.cl/tarifas"
         }
         mock_cargar.return_value = None
@@ -462,7 +462,7 @@ class TestMonitorearTarifasVigentes:
         servicio = ServiciosSanitarios()
         resultado = servicio.monitorear_tarifas_vigentes()
         
-        assert resultado["exito"] is True
+        assert resultado["success"] is True
         mock_verificar.assert_called_once()
 
 
