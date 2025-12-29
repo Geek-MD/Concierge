@@ -2,14 +2,14 @@
 """
 Ejemplo de uso de la funcionalidad de monitoreo de tarifas vigentes.
 
-Este script demuestra cómo monitorear la URL de tarifas vigentes,
-extraer información de empresas de agua y guardarla en JSON.
+This script demonstrates how to monitor the current tariffs URL,
+extract water companies information and save it to JSON.
 """
 
 import sys
 import os
 
-# Agregar el directorio raíz al path
+# Add root directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from modules.servicios_sanitarios.src import ServiciosSanitarios
@@ -17,19 +17,19 @@ from modules.servicios_sanitarios.src.utils import cargar_json
 
 
 def main():
-    """Función principal del ejemplo."""
+    """Main function of the example."""
     print("=" * 70)
     print("Concierge - Monitoreo de Tarifas Vigentes")
     print("=" * 70)
     print()
     
-    # Crear instancia del módulo
+    # Create module instance
     print("1. Creando módulo de servicios sanitarios...")
     servicio = ServiciosSanitarios(nombre="Monitor Tarifas")
     print(f"   ✓ Módulo creado: {servicio.nombre}")
     print()
     
-    # Monitorear tarifas vigentes
+    # Monitor current tariffs
     print("2. Monitoreando tarifas vigentes de empresas de agua...")
     print("   • Obteniendo URL de tarifas vigentes...")
     print("   • Extrayendo datos de empresas...")
@@ -74,7 +74,7 @@ def main():
         print(f"   • Error: {resultado.get('error', 'Desconocido')}")
     print()
     
-    # Leer el archivo JSON guardado
+    # Read the saved JSON file
     if resultado["exito"] and resultado["guardado"]:
         print("3. Leyendo datos guardados del archivo JSON...")
         datos = cargar_json("data/tarifas_empresas.json")

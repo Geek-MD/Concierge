@@ -2,33 +2,33 @@
 """
 Ejemplo de uso de la funcionalidad de descarga de PDFs.
 
-Este script demuestra cómo descargar PDFs de tarifas desde las URLs
-almacenadas en el archivo JSON.
+This script demonstrates how to download tariff PDFs from URLs
+stored in the JSON file.
 """
 
 import sys
 import os
 
-# Agregar el directorio raíz al path
+# Add root directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from modules.servicios_sanitarios.src import ServiciosSanitarios
 
 
 def main():
-    """Función principal del ejemplo."""
+    """Main function of the example."""
     print("=" * 70)
     print("Concierge - Descarga de PDFs de Tarifas")
     print("=" * 70)
     print()
     
-    # Crear instancia del módulo
+    # Create module instance
     print("1. Creando módulo de servicios sanitarios...")
     servicio = ServiciosSanitarios(nombre="Descargador PDFs")
     print(f"   ✓ Módulo creado: {servicio.nombre}")
     print()
     
-    # Descargar PDFs
+    # Download PDFs
     print("2. Descargando PDFs de tarifas...")
     print("   • Leyendo archivo JSON con URLs...")
     print("   • Verificando PDFs ya descargados...")

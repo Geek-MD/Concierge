@@ -8,7 +8,7 @@ import os
 import sys
 from unittest.mock import patch, MagicMock
 
-# Agregar el directorio raíz al path para importar el módulo
+# Add root directory to path to import the module
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 from modules.servicios_sanitarios.src.core import ServiciosSanitarios

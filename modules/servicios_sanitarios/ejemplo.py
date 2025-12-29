@@ -2,26 +2,26 @@
 """
 Ejemplo de uso del módulo Servicios Sanitarios.
 
-Este script demuestra las funcionalidades básicas del módulo.
+This script demonstrates the basic functionalities of the module.
 """
 
 import sys
 import os
 
-# Agregar el directorio raíz al path
+# Add root directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from modules.servicios_sanitarios.src import ServiciosSanitarios
 
 
 def main():
-    """Función principal del ejemplo."""
+    """Main function of the example."""
     print("=" * 60)
     print("Concierge - Servicios Sanitarios - Ejemplo de Uso")
     print("=" * 60)
     print()
     
-    # Crear instancia del módulo
+    # Create module instance
     print("1. Creando módulo de servicios sanitarios...")
     servicio = ServiciosSanitarios(nombre="Servicio Demo")
     info = servicio.obtener_info()
@@ -29,7 +29,7 @@ def main():
     print(f"   ✓ ID: {info['id']}")
     print()
     
-    # Agregar tareas
+    # Add tasks
     print("2. Agregando tareas...")
     tarea1 = servicio.agregar_tarea(
         "Limpieza general del área común",
@@ -52,27 +52,27 @@ def main():
     print(f"   ✓ Tarea 3: {tarea3['descripcion']} (Prioridad: {tarea3['prioridad']})")
     print()
     
-    # Listar tareas
+    # List tasks
     print("3. Listando todas las tareas...")
     tareas = servicio.listar_tareas()
     print(f"   Total de tareas: {len(tareas)}")
     print()
     
-    # Filtrar por prioridad
+    # Filter by priority
     print("4. Filtrando tareas críticas...")
     criticas = servicio.listar_tareas(filtro_prioridad="critica")
     for tarea in criticas:
         print(f"   - {tarea['descripcion']}")
     print()
     
-    # Completar una tarea
+    # Complete a task
     print("5. Completando tarea...")
     resultado = servicio.completar_tarea(tarea1['id'])
     if resultado:
         print(f"   ✓ Tarea completada: {tarea1['descripcion']}")
     print()
     
-    # Obtener estadísticas
+    # Get statistics
     print("6. Estadísticas del módulo:")
     stats = servicio.obtener_estadisticas()
     print(f"   Total de tareas: {stats['total']}")
@@ -84,7 +84,7 @@ def main():
             print(f"     - {prioridad.capitalize()}: {cantidad}")
     print()
     
-    # Estado del módulo
+    # Module status
     print("7. Estado del módulo:")
     print(f"   Activo: {'Sí' if servicio.esta_activo() else 'No'}")
     print()

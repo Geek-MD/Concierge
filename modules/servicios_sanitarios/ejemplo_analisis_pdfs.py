@@ -2,33 +2,33 @@
 """
 Ejemplo de uso de la funcionalidad de análisis de PDFs.
 
-Este script demuestra cómo analizar PDFs de tarifas para extraer
-su contenido de texto, tanto PDFs normales como PDFs escaneados usando OCR.
+This script demonstrates how to analyze tariff PDFs to extract
+their text content, both normal PDFs and scanned PDFs using OCR.
 """
 
 import sys
 import os
 
-# Agregar el directorio raíz al path
+# Add root directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from modules.servicios_sanitarios.src import ServiciosSanitarios
 
 
 def main():
-    """Función principal del ejemplo."""
+    """Main function of the example."""
     print("=" * 70)
     print("Concierge - Análisis de PDFs de Tarifas")
     print("=" * 70)
     print()
     
-    # Crear instancia del módulo
+    # Create module instance
     print("1. Creando módulo de servicios sanitarios...")
     servicio = ServiciosSanitarios(nombre="Analizador PDFs")
     print(f"   ✓ Módulo creado: {servicio.nombre}")
     print()
     
-    # Analizar PDFs
+    # Analyze PDFs
     print("2. Analizando PDFs de tarifas...")
     print("   • Monitoreando carpeta de PDFs...")
     print("   • Detectando PDFs nuevos...")

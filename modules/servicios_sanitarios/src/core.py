@@ -159,7 +159,7 @@ class ServiciosSanitarios:
             dict[str, Any] with module information
         """
         return {
-            "name": self.nombre,
+            "nombre": self.nombre,
             "id": self.id,
             "fecha_creacion": format_timestamp(self.fecha_creacion),
             "activo": self._activo,
