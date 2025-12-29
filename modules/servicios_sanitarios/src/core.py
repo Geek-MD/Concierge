@@ -1,7 +1,7 @@
 """
 Core functionality for Servicios Sanitarios module.
 
-Este archivo contiene la lógica principal del módulo de servicios sanitarios.
+This file contains the main logic of the sanitary services module.
 """
 
 from datetime import datetime
@@ -28,19 +28,18 @@ from .utils import (
 
 class ServiciosSanitarios:
     """
-    Clase principal para el manejo de servicios sanitarios.
+    Main class for managing sanitary services.
     
-    Esta clase proporciona la funcionalidad core del módulo, permitiendo
-    gestionar tareas relacionadas con servicios sanitarios de manera
-    automatizada y eficiente.
+    This class provides the core functionality of the module, allowing
+    automated and efficient management of tasks related to sanitary services.
     """
     
     def __init__(self, nombre: str = "ServiciosSanitarios"):
         """
-        Inicializa el módulo de servicios sanitarios.
+        Initialize the sanitary services module.
         
         Args:
-            nombre: Nombre identificador del módulo
+            nombre: Module identifier name
         """
         self.nombre = nombre
         self.id = generate_id()
@@ -53,18 +52,18 @@ class ServiciosSanitarios:
                       prioridad: str = "media",
                       metadata: Optional[dict[str, Any]] = None) -> dict[str, Any]:
         """
-        Agrega una nueva tarea al sistema.
+        Add a new task to the system.
         
         Args:
-            descripcion: Descripción de la tarea a realizar
-            prioridad: Nivel de prioridad (baja, media, alta, critica)
-            metadata: Información adicional sobre la tarea
+            descripcion: Description of the task to be performed
+            prioridad: Priority level (baja, media, alta, critica)
+            metadata: Additional information about the task
             
         Returns:
-            dict[str, Any] con la información de la tarea creada
+            dict[str, Any] with the created task information
             
         Raises:
-            ValueError: Si la prioridad no es válida
+            ValueError: If the priority is not valid
         """
         prioridades_validas = ["baja", "media", "alta", "critica"]
         if prioridad not in prioridades_validas:
@@ -87,14 +86,14 @@ class ServiciosSanitarios:
                       filtro_estado: Optional[str] = None,
                       filtro_prioridad: Optional[str] = None) -> list[dict[str, Any]]:
         """
-        Lista las tareas registradas, opcionalmente filtradas.
+        List registered tasks, optionally filtered.
         
         Args:
-            filtro_estado: Filtrar por estado (pendiente, completado)
-            filtro_prioridad: Filtrar por prioridad
+            filtro_estado: Filter by state (pendiente, completado)
+            filtro_prioridad: Filter by priority
             
         Returns:
-            Lista de tareas que cumplen los filtros
+            List of tasks that meet the filters
         """
         tareas_filtradas = self.tareas
         
@@ -110,13 +109,13 @@ class ServiciosSanitarios:
     
     def completar_tarea(self, tarea_id: str) -> bool:
         """
-        Marca una tarea como completada.
+        Mark a task as completed.
         
         Args:
-            tarea_id: ID de la tarea a completar
+            tarea_id: ID of the task to complete
             
         Returns:
-            True si la tarea fue completada exitosamente, False en caso contrario
+            True if the task was completed successfully, False otherwise
         """
         for tarea in self.tareas:
             if tarea["id"] == tarea_id:
@@ -127,10 +126,10 @@ class ServiciosSanitarios:
     
     def obtener_estadisticas(self) -> dict[str, Any]:
         """
-        Obtiene estadísticas sobre las tareas del módulo.
+        Get statistics about the module's tasks.
         
         Returns:
-            dict[str, Any] con estadísticas: total, pendientes, completadas, por prioridad
+            dict[str, Any] with statistics: total, pending, completed, by priority
         """
         total = len(self.tareas)
         pendientes = len([t for t in self.tareas if t["estado"] == "pendiente"])
@@ -154,10 +153,10 @@ class ServiciosSanitarios:
     
     def obtener_info(self) -> dict[str, Any]:
         """
-        Obtiene información general del módulo.
+        Get general module information.
         
         Returns:
-            dict[str, Any] con información del módulo
+            dict[str, Any] with module information
         """
         return {
             "name": self.nombre,
@@ -168,41 +167,41 @@ class ServiciosSanitarios:
         }
     
     def activar(self) -> None:
-        """Activa el módulo."""
+        """Activate the module."""
         self._activo = True
     
     def desactivar(self) -> None:
-        """Desactiva el módulo."""
+        """Deactivate the module."""
         self._activo = False
     
     def esta_activo(self) -> bool:
         """
-        Verifica si el módulo está activo.
+        Check if the module is active.
         
         Returns:
-            True si el módulo está activo, False en caso contrario
+            True if the module is active, False otherwise
         """
         return self._activo
     
     def verificar_siss(self, ruta_salida: str = "data/siss_url.json") -> dict[str, Any]:
         """
-        Verifica la URL de redirección de la web de SISS y la guarda en JSON.
+        Verify the redirection URL of the SISS website and save it to JSON.
         
-        Este método accede a https://www.siss.gob.cl, detecta a qué URL 
-        redirecciona, extrae la URL del enlace "Tarifas vigentes" y guarda
-        dicha información en un archivo JSON con timestamp solo si es la
-        primera vez o si alguna URL ha cambiado.
+        This method accesses https://www.siss.gob.cl, detects which URL it
+        redirects to, extracts the URL of the "Tarifas vigentes" link and saves
+        this information in a JSON file with timestamp only if it's the
+        first time or if any URL has changed.
         
         Args:
-            ruta_salida: Ruta del archivo JSON donde guardar la URL
+            ruta_salida: Path to the JSON file where to save the URL
             
         Returns:
-            dict[str, Any] con información del resultado (url, timestamp, guardado, cambios)
+            dict[str, Any] with result information (url, timestamp, saved, changes)
         """
         url_siss = "https://www.siss.gob.cl"
         timestamp = datetime.now()
         
-        # Verificar redirección
+        # Check redirection
         url_final = verificar_redireccion_url(url_siss)
         
         if url_final is None:
@@ -215,13 +214,13 @@ class ServiciosSanitarios:
                 "error": "No se pudo obtener la URL de redirección"
             }
         
-        # Extraer URL de "Tarifas vigentes"
+        # Extract URL of "Tarifas vigentes"
         url_tarifas = extraer_url_por_texto(url_final, "Tarifas vigentes")
         
-        # Cargar datos previos si existen
+        # Load previous data if they exist
         datos_previos = cargar_json(ruta_salida)
         
-        # Verificar si hay cambios
+        # Check if there are changes
         is_first_time = datos_previos is None
         url_final_cambio = False
         url_tarifas_cambio = False
@@ -235,15 +234,15 @@ class ServiciosSanitarios:
         
         hay_cambios = is_first_time or url_final_cambio or url_tarifas_cambio
         
-        # Solo guardar si hay cambios
+        # Only save if there are changes
         guardado = False
         if hay_cambios:
-            # Preparar historial
+            # Prepare history
             historial = []
             if datos_previos and "historial" in datos_previos:
                 historial = datos_previos["historial"]
             
-            # Agregar entrada actual al historial si no es la primera vez
+            # Add current entry to history if not the first time
             if not is_first_time and datos_previos:
                 entrada_historial = {
                     "url_final": datos_previos.get("url_final"),
@@ -252,7 +251,7 @@ class ServiciosSanitarios:
                 }
                 historial.append(entrada_historial)
             
-            # Preparar datos para guardar
+            # Prepare data to save
             datos = {
                 "url_original": url_siss,
                 "url_final": url_final,
@@ -262,7 +261,7 @@ class ServiciosSanitarios:
                 "historial": historial
             }
             
-            # Guardar en JSON
+            # Save to JSON
             guardado = guardar_json(datos, ruta_salida)
         
         return {
@@ -291,32 +290,32 @@ class ServiciosSanitarios:
         ruta_salida: str = "data/tarifas_empresas.json"
     ) -> dict[str, Any]:
         """
-        Monitorea la URL de "Tarifas vigentes" y extrae datos de empresas de agua.
+        Monitor the "Tarifas vigentes" URL and extract water companies data.
         
-        Este método accede a la URL de tarifas vigentes, extrae información de cada
-        empresa de agua (nombre, localidades, URLs de PDFs) y guarda los datos en JSON
-        solo si es la primera vez o si hay cambios detectados.
+        This method accesses the current tariffs URL, extracts information from each
+        water company (name, localities, PDF URLs) and saves the data to JSON
+        only if it's the first time or if changes are detected.
         
         Args:
-            url_tarifas: URL de la página de tarifas vigentes. Si no se provee,
-                        se obtiene automáticamente usando verificar_siss()
-            ruta_salida: Ruta del archivo JSON donde guardar los datos
+            url_tarifas: URL of the current tariffs page. If not provided,
+                        it is automatically obtained using verificar_siss()
+            ruta_salida: Path to the JSON file where to save the data
             
         Returns:
-            dict[str, Any] con información del resultado:
+            dict[str, Any] with result information:
             - success: True if operation was successful
-            - url_tarifas: URL de la página de tarifas vigentes
-            - empresas: Lista de empresas y sus datos
-            - timestamp: Momento de la verificación
-            - archivo: Ruta del archivo de salida
-            - guardado: True si se guardaron cambios
-            - is_first_time: True si es la primera ejecución
-            - cambios_detectados: True si hubo cambios desde última verificación
-            - message: Description of the resultado
+            - url_tarifas: URL of the current tariffs page
+            - empresas: List of companies and their data
+            - timestamp: Moment of verification
+            - archivo: Output file path
+            - guardado: True if changes were saved
+            - is_first_time: True if it's the first execution
+            - cambios_detectados: True if there were changes since last verification
+            - message: Description of the result
         """
         timestamp = datetime.now()
         
-        # Si no se provee URL, obtenerla desde verificar_siss
+        # If URL is not provided, obtain it from verificar_siss
         if url_tarifas is None:
             resultado_siss = self.verificar_siss()
             if not resultado_siss["success"]:
@@ -338,7 +337,7 @@ class ServiciosSanitarios:
                     "error": "URL de tarifas vigentes no disponible"
                 }
         
-        # Extraer datos de empresas de agua
+        # Extract water companies data
         empresas = extraer_empresas_agua(url_tarifas)
         
         if not empresas:
@@ -350,18 +349,18 @@ class ServiciosSanitarios:
                 "error": "No se pudieron extraer datos de empresas"
             }
         
-        # Cargar datos previos si existen
+        # Load previous data if they exist
         datos_previos = cargar_json(ruta_salida)
         
-        # Verificar si hay cambios
+        # Check if there are changes
         is_first_time = datos_previos is None
         cambios_detectados = False
         
         if not is_first_time and datos_previos is not None:
-            # Comparar datos actuales con previos
+            # Compare current data with previous ones
             empresas_previas = datos_previos.get("empresas", [])
             
-            # Convertir a formato comparable (serializable)
+            # Convert to comparable format (serializable)
             empresas_str_actual = str(sorted(
                 [(e["empresa"], sorted(str(t) for t in e["tarifas"])) 
                  for e in empresas]
@@ -375,15 +374,15 @@ class ServiciosSanitarios:
         
         hay_cambios = is_first_time or cambios_detectados
         
-        # Solo guardar si hay cambios
+        # Only save if there are changes
         guardado = False
         if hay_cambios:
-            # Preparar historial
+            # Prepare history
             historial: list[dict[str, Any]] = []
             if datos_previos and "historial" in datos_previos:
                 historial = datos_previos["historial"]
             
-            # Agregar entrada actual al historial si no es la primera vez
+            # Add current entry to history if not the first time
             if not is_first_time and datos_previos:
                 entrada_historial = {
                     "empresas": datos_previos.get("empresas", []),
@@ -392,7 +391,7 @@ class ServiciosSanitarios:
                 }
                 historial.append(entrada_historial)
             
-            # Preparar datos para guardar
+            # Prepare data to save
             datos = {
                 "url_tarifas": url_tarifas,
                 "empresas": empresas,
@@ -402,7 +401,7 @@ class ServiciosSanitarios:
                 "historial": historial
             }
             
-            # Guardar en JSON
+            # Save to JSON
             guardado = guardar_json(datos, ruta_salida)
         
         return {
@@ -429,35 +428,35 @@ class ServiciosSanitarios:
         registry_path: str = "data/registro_descargas.json"
     ) -> dict[str, Any]:
         """
-        Descarga PDFs de tarifas desde las URLs almacenadas en el archivo JSON.
+        Download tariff PDFs from URLs stored in the JSON file.
         
-        Este método monitorea el archivo JSON con las URLs de PDFs y:
-        - Si es la primera vez (no existe registro), descarga TODOS los PDFs
-        - Si ya existe registro, descarga solo los PDFs NUEVOS
+        This method monitors the JSON file with PDF URLs and:
+        - If it's the first time (no registry exists), downloads ALL PDFs
+        - If a registry already exists, downloads only NEW PDFs
         
-        Los PDFs se organizan en carpetas por empresa:
-        data/pdfs/Empresa_Nombre/localidad_nombre.pdf
+        PDFs are organized in folders by company:
+        data/pdfs/Company_Name/locality_name.pdf
         
         Args:
-            ruta_json: Ruta del archivo JSON con las URLs de PDFs
-            pdfs_path: Directorio base donde guardar los PDFs
-            registry_path: Ruta del archivo JSON para registrar descargas
+            ruta_json: Path to the JSON file with PDF URLs
+            pdfs_path: Base directory where to save PDFs
+            registry_path: Path to the JSON file to register downloads
             
         Returns:
-            dict[str, Any] con información del resultado:
+            dict[str, Any] with result information:
             - success: True if operation was successful
-            - total_pdfs: Total de PDFs en el JSON
-            - descargados: Cantidad de PDFs descargados
+            - total_pdfs: Total PDFs in the JSON
+            - descargados: Number of PDFs downloaded
             - failed: Number of PDFs that failed
-            - is_first_time: True si es la primera descarga
-            - pdfs_descargados: Lista de PDFs descargados exitosamente
+            - is_first_time: True if it's the first download
+            - pdfs_descargados: List of successfully downloaded PDFs
             - failed_pdfs: List of PDFs that failed
             - timestamp: Moment of the operation
-            - message: Description of the resultado
+            - message: Description of the result
         """
         timestamp = datetime.now()
         
-        # Cargar datos de URLs desde JSON
+        # Load URL data from JSON
         datos_urls = cargar_json(ruta_json)
         if not datos_urls:
             return {
@@ -466,7 +465,7 @@ class ServiciosSanitarios:
                 "timestamp": format_timestamp(timestamp)
             }
         
-        # Obtener empresas y sus tarifas
+        # Get companies and their tariffs
         empresas = datos_urls.get("empresas", [])
         if not empresas:
             return {
@@ -475,24 +474,24 @@ class ServiciosSanitarios:
                 "timestamp": format_timestamp(timestamp)
             }
         
-        # Cargar registro de descargas previas
+        # Load previous download registry
         registro_previo = cargar_json(registry_path)
         is_first_time = registro_previo is None
         
-        # Obtener PDFs ya descargados (si existen)
+        # Get already downloaded PDFs (if they exist)
         pdfs_previos = set()
         if not is_first_time and registro_previo:
             for pdf_info in registro_previo.get("pdfs_descargados", []):
                 pdfs_previos.add(pdf_info["url_pdf"])
         
-        # Procesar descargas
+        # Process downloads
         total_pdfs = 0
         pdfs_descargados: list[dict[str, str]] = []
         failed_pdfs: list[dict[str, str]] = []
         
         for empresa_data in empresas:
             empresa = empresa_data["empresa"]
-            # Normalizar nombre de empresa para usar como directorio
+            # Normalize company name to use as directory
             empresa_dir = empresa.replace(" ", "_").replace("/", "_")
             
             for tarifa in empresa_data.get("tarifas", []):
@@ -500,16 +499,16 @@ class ServiciosSanitarios:
                 url_pdf = tarifa["url_pdf"]
                 total_pdfs += 1
                 
-                # Si no es primera vez, verificar si ya fue descargado
+                # If not first time, check if already downloaded
                 if not is_first_time and url_pdf in pdfs_previos:
                     continue
                 
-                # Normalizar nombre de localidad para archivo
+                # Normalize locality name for file
                 localidad_file = localidad.replace(" ", "_").replace("/", "_")
-                # PDF va directo en folder de empresa: empresa/localidad.pdf
+                # PDF goes directly in company folder: company/locality.pdf
                 ruta_pdf = Path(pdfs_path) / empresa_dir / f"{localidad_file}.pdf"
                 
-                # Intentar descargar
+                # Try to download
                 if descargar_pdf(url_pdf, str(ruta_pdf)):
                     pdfs_descargados.append({
                         "empresa": empresa,
@@ -526,7 +525,7 @@ class ServiciosSanitarios:
                         "error": "Fallo en descarga"
                     })
         
-        # Preparar registro actualizado
+        # Prepare updated registry
         pdfs_totales_descargados = []
         if not is_first_time and registro_previo:
             # Keep previous records
@@ -535,7 +534,7 @@ class ServiciosSanitarios:
         # Add new ones
         pdfs_totales_descargados.extend(pdfs_descargados)
         
-        # Guardar registro actualizado
+        # Save updated registry
         registro = {
             "ultima_actualizacion": format_timestamp(timestamp),
             "total_pdfs_descargados": len(pdfs_totales_descargados),
@@ -585,23 +584,23 @@ class ServiciosSanitarios:
         only_new: bool = True
     ) -> dict[str, Any]:
         """
-        Analiza PDFs de tarifas extrayendo su contenido de texto y tablas.
+        Analyze tariff PDFs extracting their text content and tables.
         
-        Este método monitorea la folder de PDFs y:
+        This method monitors the PDFs folder and:
         - If only_new=True (default), analyzes only new PDFs
         - If only_new=False, analyzes all PDFs
-        - Si extract_tables=True (por defecto), detecta y extrae tablas con bordes
+        - If extract_tables=True (default), detects and extracts tables with borders
         - Can use OCR for scanned PDFs if use_ocr=True
         
         Args:
             pdfs_path: Directory where PDFs are located
             registry_path: Path to JSON file to register analyses
             use_ocr: If True, tries OCR for scanned PDFs
-            extract_tables: Si es True, extrae tablas detectando bordes y estructura
+            extract_tables: If True, extracts tables detecting borders and structure
             only_new: If True, only analyzes non-analyzed PDFs
             
         Returns:
-            dict[str, Any] con información del resultado:
+            dict[str, Any] with result information:
             - success: True if operation was successful
             - total_pdfs: Total PDFs found
             - analyzed: Number of PDFs analyzed
@@ -610,7 +609,7 @@ class ServiciosSanitarios:
             - analyzed_pdfs: List of analyzed PDFs with their content
             - failed_pdfs: List of PDFs that failed
             - timestamp: Moment of the operation
-            - message: Description of the resultado
+            - message: Description of the result
         """
         timestamp = datetime.now()
         
@@ -633,7 +632,7 @@ class ServiciosSanitarios:
                 "message": "No hay PDFs para analizar"
             }
         
-        # Cargar registro previo
+        # Load previous registry
         registro_previo = cargar_json(registry_path)
         is_first_time = registro_previo is None
         
@@ -648,14 +647,14 @@ class ServiciosSanitarios:
             
             # Decide extraction method
             if extract_tables:
-                # Usar pdfplumber para detectar tablas y bordes
+                # Use pdfplumber to detect tables and borders
                 extraction_result = extract_pdf_tables(ruta_pdf)
                 
                 if extraction_result:
                     texto = extraction_result["texto"]
                     tablas = extraction_result["tablas"]
                     
-                    # Procesar estructura de tablas
+                    # Process table structure
                     processed_tables = []
                     total_conceptos = 0
                     total_secciones = 0
@@ -675,13 +674,13 @@ class ServiciosSanitarios:
                             "preview": t["texto_formateado"][:200] + "..." if len(t["texto_formateado"]) > 200 else t["texto_formateado"]
                         }
                         
-                        # Agregar secciones si existen
+                        # Add sections if they exist
                         if estructura.get("sections"):
                             table_info["sections"] = [
                                 {
                                     "name": sec["nombre_seccion"],
                                     "num_data": len(sec["datos"]),
-                                    "concepts": [d["concept"] for d in sec["datos"][:3]]  # Primeros 3
+                                    "concepts": [d["concept"] for d in sec["datos"][:3]]  # First 3
                                 }
                                 for sec in estructura.get("sections", [])
                             ]
@@ -693,7 +692,7 @@ class ServiciosSanitarios:
                                     "concept": d["concept"],
                                     "value": d["value"]
                                 }
-                                for d in estructura.get("direct_data", [])[:5]  # Primeros 5
+                                for d in estructura.get("direct_data", [])[:5]  # First 5
                             ]
                         
                         processed_tables.append(table_info)
@@ -768,7 +767,7 @@ class ServiciosSanitarios:
                         "error": "No se pudo extraer texto"
                     })
         
-        # Preparar registro actualizado con estructura jerárquica
+        # Prepare updated registry with hierarchical structure
         total_analyzed_pdfs = []
         if not is_first_time and registro_previo:
             # Keep previous records
@@ -777,10 +776,10 @@ class ServiciosSanitarios:
         # Add new ones
         total_analyzed_pdfs.extend(analyzed_pdfs)
         
-        # Organizar en estructura jerárquica por empresa y localidad
+        # Organize in hierarchical structure by company and locality
         hierarchical_structure = organize_hierarchical_analysis(total_analyzed_pdfs)
         
-        # Guardar registro con estructura jerárquica
+        # Save registry with hierarchical structure
         registro = {
             "ultima_actualizacion": format_timestamp(timestamp),
             "total_analyzed_pdfs": len(total_analyzed_pdfs),
