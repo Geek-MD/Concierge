@@ -607,10 +607,10 @@ class TestAnalyzePdfs(unittest.TestCase):
         )
         
         self.assertTrue(resultado['success'])
-        self.assertTrue(resultado['es_primera_vez'])
+        self.assertTrue(resultado['is_first_time'])
         self.assertEqual(resultado['total_pdfs'], 2)
         self.assertEqual(resultado['analizados'], 2)
-        self.assertEqual(resultado['fallidos'], 0)
+        self.assertEqual(resultado['failed'], 0)
     
     @patch('modules.servicios_sanitarios.src.core.extraer_texto_pdf')
     def test_analizar_pdfs_solo_nuevos(self, mock_extraer):
@@ -642,7 +642,7 @@ class TestAnalyzePdfs(unittest.TestCase):
         )
         
         self.assertTrue(resultado2['success'])
-        self.assertFalse(resultado2['es_primera_vez'])
+        self.assertFalse(resultado2['is_first_time'])
         self.assertEqual(resultado2['analizados'], 1)
     
     @patch('modules.servicios_sanitarios.src.core.extraer_texto_pdf')
@@ -662,7 +662,7 @@ class TestAnalyzePdfs(unittest.TestCase):
         
         self.assertTrue(resultado['success'])
         self.assertEqual(resultado['analizados'], 1)
-        self.assertEqual(resultado['fallidos'], 1)
+        self.assertEqual(resultado['failed'], 1)
     
     def test_analizar_pdfs_carpeta_vacia(self):
         """Test cuando no hay PDFs."""

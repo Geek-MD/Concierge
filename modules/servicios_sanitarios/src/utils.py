@@ -13,6 +13,11 @@ from urllib.parse import urljoin
 import requests
 from bs4 import BeautifulSoup
 
+from .logger import get_logger
+
+# Initialize logger for utilities
+logger = get_logger('concierge.servicios_sanitarios.utils')
+
 
 def generate_id() -> str:
     """
@@ -37,20 +42,20 @@ def format_timestamp(dt: datetime) -> str:
     return dt.isoformat()
 
 
-def validar_prioridad(prioridad: str) -> bool:
+def validate_priority(priority: str) -> bool:
     """
     Validate that a priority is valid.
     
     Args:
-        prioridad: String with the priority to validate
+        priority: String with the priority to validate
         
     Returns:
         True if it's valid, False otherwise
     """
-    return prioridad in ["baja", "media", "alta", "critica"]
+    return priority in ["baja", "media", "alta", "critica"]
 
 
-def obtener_fecha_actual() -> datetime:
+def get_current_date() -> datetime:
     """
     Get the current date and time.
     
@@ -60,42 +65,42 @@ def obtener_fecha_actual() -> datetime:
     return datetime.now()
 
 
-def formatear_duracion(inicio: datetime, fin: Optional[datetime] = None) -> str:
+def format_duration(start: datetime, end: Optional[datetime] = None) -> str:
     """
     Calculate and format the duration between two dates.
     
     Args:
-        inicio: Start date
-        fin: End date (if not provided, uses current date)
+        start: Start date
+        end: End date (if not provided, uses current date)
         
     Returns:
         String with the formatted duration
     """
-    if fin is None:
-        fin = datetime.now()
+    if end is None:
+        end = datetime.now()
     
-    duracion = fin - inicio
+    duration = end - start
     
-    dias = duracion.days
-    segundos = duracion.seconds
-    horas = segundos // 3600
-    minutos = (segundos % 3600) // 60
-    segs = segundos % 60
+    days = duration.days
+    seconds = duration.seconds
+    hours = seconds // 3600
+    minutes = (seconds % 3600) // 60
+    secs = seconds % 60
     
-    partes = []
-    if dias > 0:
-        partes.append(f"{dias}d")
-    if horas > 0:
-        partes.append(f"{horas}h")
-    if minutos > 0:
-        partes.append(f"{minutos}m")
-    if segs > 0 or not partes:
-        partes.append(f"{segs}s")
+    parts = []
+    if days > 0:
+        parts.append(f"{days}d")
+    if hours > 0:
+        parts.append(f"{hours}h")
+    if minutes > 0:
+        parts.append(f"{minutes}m")
+    if secs > 0 or not parts:
+        parts.append(f"{secs}s")
     
-    return " ".join(partes)
+    return " ".join(parts)
 
 
-def verificar_redireccion_url(url: str, timeout: int = 10) -> Optional[str]:
+def check_url_redirection(url: str, timeout: int = 10) -> Optional[str]:
     """
     Check the URL to which a web page redirects.
     
@@ -107,89 +112,123 @@ def verificar_redireccion_url(url: str, timeout: int = 10) -> Optional[str]:
         String with the final URL after redirections, or None if there's an error
     """
     try:
+        logger.debug(f"Checking redirection for URL: {url}")
         response = requests.get(url, timeout=timeout, allow_redirects=True)
-        return response.url
+        response.raise_for_status()
+        final_url = response.url
+        logger.debug(f"Redirection check successful: {url} -> {final_url}")
+        return final_url
+    except requests.exceptions.Timeout as e:
+        logger.error(f"Timeout error when checking redirection for {url}: {e}")
+        return None
+    except requests.exceptions.ConnectionError as e:
+        logger.error(f"Connection error when checking redirection for {url}: {e}")
+        return None
+    except requests.exceptions.HTTPError as e:
+        logger.error(f"HTTP error when checking redirection for {url}: {e}")
+        return None
     except Exception as e:
-        print(f"Error al verificar redirección: {e}")
+        logger.error(f"Unexpected error when checking redirection for {url}: {e}", exc_info=True)
         return None
 
 
-def guardar_json(data: dict[str, Any], ruta_archivo: str) -> bool:
+def save_json(data: dict[str, Any], file_path: str) -> bool:
     """
     Save data to a JSON file.
     
     Args:
         data: Dictionary with the data to save
-        ruta_archivo: Path to the file where to save the data
+        file_path: Path to the file where to save the data
         
     Returns:
         True if saved successfully, False otherwise
     """
     try:
-        ruta = Path(ruta_archivo)
-        ruta.parent.mkdir(parents=True, exist_ok=True)
+        path = Path(file_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
         
-        with open(ruta, 'w', encoding='utf-8') as f:
+        with open(path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
+        logger.debug(f"Successfully saved JSON to {file_path}")
         return True
     except Exception as e:
-        print(f"Error al guardar JSON: {e}")
+        logger.error(f"Error saving JSON to {file_path}: {e}", exc_info=True)
         return False
 
 
-def cargar_json(ruta_archivo: str) -> Optional[dict[str, Any]]:
+def load_json(file_path: str) -> Optional[dict[str, Any]]:
     """
     Load data from a JSON file.
     
     Args:
-        ruta_archivo: Path to the JSON file to load
+        file_path: Path to the JSON file to load
         
     Returns:
         Dictionary with the loaded data, or None if there's an error
     """
     try:
-        with open(ruta_archivo, 'r', encoding='utf-8') as f:
-            return json.load(f)
+        with open(file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        logger.debug(f"Successfully loaded JSON from {file_path}")
+        return data
+    except FileNotFoundError:
+        logger.debug(f"JSON file not found: {file_path}")
+        return None
+    except json.JSONDecodeError as e:
+        logger.error(f"Error decoding JSON from {file_path}: {e}")
+        return None
     except Exception as e:
-        print(f"Error al cargar JSON: {e}")
+        logger.error(f"Error loading JSON from {file_path}: {e}", exc_info=True)
         return None
 
 
-def extraer_url_por_texto(url: str, texto_buscar: str, timeout: int = 10) -> Optional[str]:
+def extract_url_by_text(url: str, search_text: str, timeout: int = 10) -> Optional[str]:
     """
     Extract the URL of a link in an HTML page by searching for the link text.
     
     Args:
         url: URL of the page to analyze
-        texto_buscar: Text of the link to search for
+        search_text: Text of the link to search for
         timeout: Maximum wait time in seconds
         
     Returns:
         String with the absolute URL of the found link, or None if not found
     """
     try:
+        logger.debug(f"Extracting URL by text '{search_text}' from {url}")
         response = requests.get(url, timeout=timeout, allow_redirects=True)
         response.raise_for_status()
         
         soup = BeautifulSoup(response.content, 'html.parser')
         
         # Search for the link by text
-        link = soup.find('a', string=lambda text: text and texto_buscar.lower() in text.lower())
+        link = soup.find('a', string=lambda text: text and search_text.lower() in text.lower())
         
         if link and hasattr(link, 'get'):
             # Convert to absolute URL if relative
             href = link.get('href')
             if href and isinstance(href, str):
-                url_absoluta = urljoin(url, href)
-                return url_absoluta
+                absolute_url = urljoin(url, href)
+                logger.debug(f"Found link for '{search_text}': {absolute_url}")
+                return absolute_url
         
+        logger.warning(f"Link with text '{search_text}' not found on page {url}")
+        return None
+    except requests.exceptions.Timeout as e:
+        logger.error(f"Timeout error when extracting URL by text from {url}: {e}")
+        return None
+    except requests.exceptions.ConnectionError as e:
+        logger.error(f"Connection error when extracting URL by text from {url}: {e}")
+        return None
+    except requests.exceptions.HTTPError as e:
+        logger.error(f"HTTP error when extracting URL by text from {url}: {e}")
         return None
     except Exception as e:
-        print(f"Error al extraer URL por text: {e}")
+        logger.error(f"Unexpected error when extracting URL by text from {url}: {e}", exc_info=True)
         return None
 
 
-def extraer_nombre_empresa(text: str) -> Optional[str]:
+def extract_company_name(text: str) -> Optional[str]:
     """
     Extract the water company name from text with format "Company - Text".
     
@@ -200,7 +239,7 @@ def extraer_nombre_empresa(text: str) -> Optional[str]:
         String with the company name (before the dash), or None if not found
         
     Examples:
-        >>> extraer_nombre_empresa("Aguas Andinas - Tarifas vigentes")
+        >>> extract_company_name("Aguas Andinas - Tarifas vigentes")
         "Aguas Andinas"
     """
     try:
@@ -209,17 +248,17 @@ def extraer_nombre_empresa(text: str) -> Optional[str]:
         
         # Search for the dash and extract text before it
         if " - " in text:
-            nombre = text.split(" - ")[0].strip()
-            return nombre if nombre else None
+            name = text.split(" - ")[0].strip()
+            return name if name else None
         
         # If there's no dash, return the complete clean text
         return text.strip() if text.strip() else None
     except Exception as e:
-        print(f"Error al extraer nombre de company: {e}")
+        logger.error(f"Error extracting company name: {e}")
         return None
 
 
-def extraer_datos_tabla_tarifas(
+def extract_tariff_table_data(
     html_content: str, 
     base_url: str
 ) -> list[dict[str, Any]]:
@@ -241,7 +280,7 @@ def extraer_datos_tabla_tarifas(
     """
     try:
         soup = BeautifulSoup(html_content, 'html.parser')
-        datos_extraidos: list[dict[str, Any]] = []
+        extracted_data: list[dict[str, Any]] = []
         
         # Search for all tables
         tables = soup.find_all('table')
@@ -258,18 +297,18 @@ def extraer_datos_tabla_tarifas(
                 continue
                 
             # Search for column indices (case-insensitive)
-            idx_localidades = -1
-            idx_tarifa = -1
+            idx_localities = -1
+            idx_tariff = -1
             
             for i, header in enumerate(headers):
                 header_lower = header.lower()
                 if 'localidad' in header_lower:
-                    idx_localidades = i
+                    idx_localities = i
                 if 'tarifa' in header_lower and 'vigente' in header_lower:
-                    idx_tarifa = i
+                    idx_tariff = i
             
             # If both columns are not found, try with the next table
-            if idx_localidades == -1 or idx_tarifa == -1:
+            if idx_localities == -1 or idx_tariff == -1:
                 continue
             
             # Extract data rows
@@ -279,33 +318,33 @@ def extraer_datos_tabla_tarifas(
                 cells = row.find_all(['td', 'th'])
                 
                 # Check that there are enough cells
-                if len(cells) <= max(idx_localidades, idx_tarifa):
+                if len(cells) <= max(idx_localities, idx_tariff):
                     continue
                 
                 # Extract locality
-                localidad = cells[idx_localidades].get_text(strip=True)
+                locality = cells[idx_localities].get_text(strip=True)
                 
                 # Extract PDF URL from the current tariff cell
-                celda_tarifa = cells[idx_tarifa]
-                enlace_pdf = celda_tarifa.find('a')
+                tariff_cell = cells[idx_tariff]
+                pdf_link = tariff_cell.find('a')
                 
                 # Only add if both data exist
-                if localidad and enlace_pdf:
-                    href = enlace_pdf.get('href')
+                if locality and pdf_link:
+                    href = pdf_link.get('href')
                     if href:
-                        url_pdf = urljoin(base_url, href)
-                        datos_extraidos.append({
-                            'localidad': localidad,
-                            'url_pdf': url_pdf
+                        pdf_url = urljoin(base_url, href)
+                        extracted_data.append({
+                            'localidad': locality,
+                            'url_pdf': pdf_url
                         })
         
-        return datos_extraidos
+        return extracted_data
     except Exception as e:
-        print(f"Error al extraer data de table de tarifas: {e}")
+        logger.error(f"Error extracting tariff table data: {e}", exc_info=True)
         return []
 
 
-def extraer_empresas_agua(url: str, timeout: int = 10) -> list[dict[str, Any]]:
+def extract_water_companies(url: str, timeout: int = 10) -> list[dict[str, Any]]:
     """
     Extract information from all water companies from the current tariffs page.
     
@@ -327,56 +366,65 @@ def extraer_empresas_agua(url: str, timeout: int = 10) -> list[dict[str, Any]]:
         response.raise_for_status()
         
         soup = BeautifulSoup(response.content, 'html.parser')
-        empresas: list[dict[str, Any]] = []
+        companies: list[dict[str, Any]] = []
         
         # Search for elements containing company names
         # Typically they will be headers (h2, h3, h4) or elements with format "Company - Current Tariffs"
-        posibles_empresas = soup.find_all(['h2', 'h3', 'h4', 'strong', 'b'])
+        possible_companies = soup.find_all(['h2', 'h3', 'h4', 'strong', 'b'])
         
-        for elemento in posibles_empresas:
-            text = elemento.get_text(strip=True)
+        for element in possible_companies:
+            text = element.get_text(strip=True)
             
             # Check if the text contains "Tarifas vigentes" or similar
             if 'tarifa' not in text.lower():
                 continue
             
             # Extract company name
-            nombre_empresa = extraer_nombre_empresa(text)
-            if not nombre_empresa:
+            company_name = extract_company_name(text)
+            if not company_name:
                 continue
             
             # Search for the table following the company header
-            tabla_siguiente = elemento.find_next('table')
-            if not tabla_siguiente:
+            next_table = element.find_next('table')
+            if not next_table:
                 continue
             
             # Extract data from the table
-            tabla_html = str(tabla_siguiente)
-            datos_tarifas = extraer_datos_tabla_tarifas(
-                tabla_html,
+            table_html = str(next_table)
+            tariff_data = extract_tariff_table_data(
+                table_html,
                 response.url
             )
             
             # Only add if there is tariff data
-            if datos_tarifas:
-                empresas.append({
-                    'empresa': nombre_empresa,
-                    'tarifas': datos_tarifas
+            if tariff_data:
+                companies.append({
+                    'empresa': company_name,
+                    'tarifas': tariff_data
                 })
         
-        return empresas
+        return companies
+    except requests.exceptions.Timeout as e:
+        logger.error(f"Timeout error when extracting water companies from {url}: {e}")
+        return []
+    except requests.exceptions.ConnectionError as e:
+        logger.error(f"Connection error when extracting water companies from {url}: {e}")
+        return []
+    except requests.exceptions.HTTPError as e:
+        logger.error(f"HTTP error when extracting water companies from {url}: {e}")
+        return []
     except Exception as e:
-        print(f"Error al extraer companies de agua: {e}")
+        logger.error(f"Unexpected error when extracting water companies from {url}: {e}", exc_info=True)
         return []
 
 
-def descargar_pdf(url: str, ruta_destino: str, timeout: int = 30) -> bool:
+def download_pdf(url: str, dest_path: str, timeout: int = 30) -> bool:
     """
     Download a PDF file from a URL and save it to disk.
     
     Args:
         url: URL of the PDF to download
-        ruta_destino: Path where to save the PDF
+        dest_path: Path where to save the PDF
         timeout: Maximum wait time in seconds
         
     Returns:
@@ -384,8 +432,10 @@ def descargar_pdf(url: str, ruta_destino: str, timeout: int = 30) -> bool:
     """
     try:
         # Create directories if they don't exist
-        ruta = Path(ruta_destino)
-        ruta.parent.mkdir(parents=True, exist_ok=True)
+        path = Path(dest_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        
+        logger.debug(f"Downloading PDF from {url} to {dest_path}")
         
         # Download the PDF
         response = requests.get(url, timeout=timeout, allow_redirects=True, stream=True)
@@ -394,23 +444,33 @@ def descargar_pdf(url: str, ruta_destino: str, timeout: int = 30) -> bool:
         # Check that the content is PDF
         content_type = response.headers.get('content-type', '').lower()
         if 'pdf' not in content_type and not url.lower().endswith('.pdf'):
-            print(f"Advertencia: El contenido no parece ser un PDF (content-type: {content_type})")
+            logger.warning(f"Content may not be a PDF (content-type: {content_type}) for URL: {url}")
         
         # Save the file
-        with open(ruta, 'wb') as f:
+        with open(path, 'wb') as f:
             for chunk in response.iter_content(chunk_size=8192):
                 if chunk:
                     f.write(chunk)
         
         # Verify that the file was saved and has content
-        if ruta.exists() and ruta.stat().st_size > 0:
+        if path.exists() and path.stat().st_size > 0:
+            logger.debug(f"Successfully downloaded PDF to {dest_path} ({path.stat().st_size} bytes)")
             return True
         else:
-            print("Error: El archivo descargado está vacío o no existe")
+            logger.error(f"Downloaded file is empty or does not exist: {dest_path}")
             return False
             
+    except requests.exceptions.Timeout as e:
+        logger.error(f"Timeout error when downloading PDF from {url}: {e}")
+        return False
+    except requests.exceptions.ConnectionError as e:
+        logger.error(f"Connection error when downloading PDF from {url}: {e}")
+        return False
+    except requests.exceptions.HTTPError as e:
+        logger.error(f"HTTP error when downloading PDF from {url}: {e}")
+        return False
     except Exception as e:
-        print(f"Error al descargar PDF desde {url}: {e}")
+        logger.error(f"Unexpected error when downloading PDF from {url}: {e}", exc_info=True)
         return False
 
 
